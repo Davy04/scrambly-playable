@@ -85,8 +85,10 @@ button {
   transform: translateX(-50%);
 }
 
+/* Above the end screen layer, so the sound can be muted while the end screen is open. */
 #mute {
   right: 1.9em;
+  z-index: 1;
 }
 
 /* End screen: a dark layer with a card in the middle. The layer covers the whole game,

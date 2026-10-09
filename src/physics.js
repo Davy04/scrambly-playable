@@ -1,4 +1,4 @@
-import { PLAY_AREA, LEVELS, PHYSICS, FIXED_STEP, POP_DURATION } from './config.js';
+import { PLAY_AREA, LEVELS, PHYSICS, FIXED_STEP, POP_DURATION, SQUASH } from './config.js';
 
 // Matter.js is loaded by a classic <script> tag in index.html and lives in the global `Matter`.
 const { Engine, Bodies, Composite, Events } = Matter;
@@ -37,11 +37,29 @@ export function createWorld() {
   // Same-level pairs that started touching during the current step.
   // They are only collected here: changing the world inside a Matter callback is unsafe.
   const touchingPairs = [];
+  // Hard hits of the current step() call, reported so the renderer can squash the balls.
+  let impacts = [];
   Events.on(engine, 'collisionStart', (event) => {
-    for (const { bodyA, bodyB } of event.pairs) {
-      if (canMerge(bodyA, bodyB)) touchingPairs.push([bodyA, bodyB]);
+    for (const pair of event.pairs) {
+      if (canMerge(pair.bodyA, pair.bodyB)) touchingPairs.push([pair.bodyA, pair.bodyB]);
+      else recordImpact(pair);
     }
   });
+
+  // Measures how fast the two bodies were closing in along the line between them.
+  // Slow contacts are ignored, so balls resting in a stack report nothing.
+  function recordImpact({ bodyA, bodyB, collision }) {
+    const { normal } = collision;
+    const closingSpeed = Math.abs(
+      (bodyA.velocity.x - bodyB.velocity.x) * normal.x + (bodyA.velocity.y - bodyB.velocity.y) * normal.y,
+    );
+    if (closingSpeed < SQUASH.minImpact) return;
+
+    const angle = Math.atan2(normal.y, normal.x);
+    for (const body of [bodyA, bodyB]) {
+      if (body.level) impacts.push({ ball: body, speed: closingSpeed, angle }); // walls have no level
+    }
+  }
 
   function addBall(level, x, y) {
     const ball = Bodies.circle(x, y, LEVELS[level - 1].radius, {
@@ -51,6 +69,8 @@ export function createWorld() {
     ball.level = level;
     ball.merged = false; // true once this ball has been used in a merge
     ball.popLeft = 0; // seconds left of the "pop" animation
+    ball.squash = 0; // how flattened the ball is drawn right now (set by effects.js)
+    ball.squashAngle = 0; // direction of the flattening
     Composite.add(engine.world, ball);
     return ball;
   }
@@ -70,11 +90,14 @@ export function createWorld() {
     const x = Math.min(Math.max(midX, PLAY_AREA.x + radius), PLAY_AREA.x + PLAY_AREA.w - radius);
     const y = Math.min(midY, PLAY_AREA.y + PLAY_AREA.h - radius);
 
-    addBall(level, x, y).popLeft = POP_DURATION;
-    return { x, y, level };
+    const sources = [{ ...ballA.position }, { ...ballB.position }];
+    const ball = addBall(level, x, y);
+    ball.popLeft = POP_DURATION;
+    return { x, y, level, ball, sources };
   }
 
-  // Returns what was merged, as a list of { x, y, level } for the new balls.
+  // Returns what was merged: one { x, y, level, ball, sources } per new ball.
+  // `sources` are the positions of the two balls that were replaced.
   function resolveMerges() {
     const merges = [];
     for (const [ballA, ballB] of touchingPairs) {
@@ -94,9 +117,10 @@ export function createWorld() {
 
   // Advances the simulation in fixed steps. Time that does not fill a whole step is kept for the next frame.
   // dt is already clamped by the game loop (MAX_DT), so this loop runs a few times at most.
-  // Returns every merge that happened during this call.
+  // Returns the merges and the hard impacts that happened during this call.
   function step(dt) {
     const merges = [];
+    impacts = [];
     unsimulatedTime += dt;
     while (unsimulatedTime >= FIXED_STEP) {
       Engine.update(engine, FIXED_STEP * 1000); // Matter wants milliseconds
@@ -104,7 +128,7 @@ export function createWorld() {
       updatePopTimers();
       unsimulatedTime -= FIXED_STEP;
     }
-    return merges;
+    return { merges, impacts };
   }
 
   function balls() {

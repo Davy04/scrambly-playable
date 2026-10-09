@@ -44,10 +44,30 @@ export const PHYSICS = {
 // The simulation always advances in steps of this size, whatever the screen refresh rate.
 export const FIXED_STEP = 1 / 60;
 
-// Merge "pop": a new merged ball is drawn growing from POP_START_SCALE to full size.
+// Merge "pop": a new merged ball is drawn growing from POP_START_SCALE, a bit past full size, then settling.
 // Visual only: the physics radius is full size from the start.
-export const POP_DURATION = 0.2; // seconds
+export const POP_DURATION = 0.3; // seconds
 export const POP_START_SCALE = 0.6;
+
+// Merge feedback (effects.js). Short and quiet on purpose.
+export const MERGE_FX = {
+  ghostLife: 0.12, // seconds the two merged balls take to shrink into the new one
+  ringLife: 0.3, // seconds of the expanding circle
+  particleLife: 0.45,
+  maxParticles: 60, // hard limit on particles alive at the same time
+  chainWindow: 0.9, // merges closer than this (seconds) count as a chain
+  maxChain: 4, // the feedback stops growing after this many chained merges
+};
+
+// Squash on impact: balls are drawn slightly flattened for a moment after a hard hit.
+// Visual only: the physics shapes stay perfect circles.
+export const SQUASH = {
+  minImpact: 2.5, // closing speed (pixels per physics step) below which nothing happens, so resting stacks stay still
+  perSpeed: 0.01, // how much squash each unit of closing speed adds
+  max: 0.08, // largest squash: 8% flatter along the hit direction
+  duration: 0.16, // seconds for the largest squash to go back to round
+  heavyFactor: 0.07, // each level deforms this much less than the one before, so big balls look heavier
+};
 
 // Dropping
 export const MAX_DROP_LEVEL = 4; // drops are random between level 1 and this one (half the chain, like Suika)
@@ -64,8 +84,20 @@ export const MILESTONES = [
   { level: 8, label: 'Redeem', balance: 500 },
 ];
 
+// The fox mascot, standing on the top-left corner of the play area.
+export const FOX = {
+  centerX: 66,
+  bottomY: PLAY_AREA.y - 2,
+  height: 104, // the image is 294x320: do not draw it much bigger than this
+  hopDuration: 0.35, // seconds
+  hopSmall: 8, // hop height on any merge
+  hopBig: 22, // hop height when a milestone is reached
+  nervousDelay: 0.3, // seconds the stack must stay high before the fox reacts
+};
+
 // End rules
 export const WIN_LEVEL = LEVELS.length; // the game is won when a ball of the last level exists
 export const DANGER_Y = PLAY_AREA.y + 70; // the stack must stay below this line
 export const DANGER_TIME = 2; // seconds a ball may rest above the line before the game is lost
 export const REST_SPEED = 1; // a ball slower than this (pixels per physics step) counts as resting
+export const NERVOUS_MARGIN = 50; // the fox gets nervous when the stack is this close to the danger line

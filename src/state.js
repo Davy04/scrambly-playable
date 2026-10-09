@@ -1,6 +1,6 @@
 import {
   PLAY_AREA, LEVELS, MAX_DROP_LEVEL, DROP_COOLDOWN, DROP_Y,
-  EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED, MILESTONES,
+  EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED, NERVOUS_MARGIN, MILESTONES,
 } from './config.js';
 
 // Picks the level of the next ball. The first EASY_DROPS balls are small, so early merges are easy.
@@ -70,9 +70,19 @@ export function demoBalance(state) {
 }
 
 // A falling ball also passes above the line, so only slow balls count.
-function isRestingAboveLine(ball) {
+function isRestingAbove(ball, lineY) {
   const top = ball.position.y - LEVELS[ball.level - 1].radius;
-  return top < DANGER_Y && ball.speed < REST_SPEED;
+  return top < lineY && ball.speed < REST_SPEED;
+}
+
+// True when the stack is close to the danger line. Used only for the fox's nervous reaction.
+export function isStackHigh(world) {
+  return world.balls().some((ball) => isRestingAbove(ball, DANGER_Y + NERVOUS_MARGIN));
+}
+
+// The first two balls are dealt when the game starts, so a third one means the player has dropped.
+export function hasDropped(state) {
+  return state.dealt > 2;
 }
 
 // Runs once per frame after the physics step: checks for the win and the loss.
@@ -86,6 +96,7 @@ export function updateRules(state, world, dt) {
   }
 
   // The timer only grows while a ball stays up there; it restarts as soon as the line is clear.
-  state.dangerTime = balls.some(isRestingAboveLine) ? state.dangerTime + dt : 0;
+  const inDanger = balls.some((ball) => isRestingAbove(ball, DANGER_Y));
+  state.dangerTime = inDanger ? state.dangerTime + dt : 0;
   if (state.dangerTime >= DANGER_TIME) state.status = 'lost';
 }

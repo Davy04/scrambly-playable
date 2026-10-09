@@ -1,9 +1,12 @@
-import { MAX_DT, DANGER_TIME } from './config.js';
+import { MAX_DT, DANGER_TIME, MILESTONES, FOX } from './config.js';
 import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
+import { createEffects } from './effects.js';
+import { createFox } from './ui.js';
 import {
   createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
+  isStackHigh, hasDropped,
 } from './state.js';
 
 const stage = document.getElementById('stage');
@@ -21,8 +24,35 @@ const stageObserver = new ResizeObserver(([entry]) => {
 });
 stageObserver.observe(stage);
 
+const foxImage = new Image();
+foxImage.src = 'assets/scrambly-fox-reference.webp';
+
 const world = createWorld();
 const state = createState();
+const effects = createEffects();
+const fox = createFox(foxImage);
+
+// Feedback for the merges of this frame: the merge effect, a fox hop,
+// and a bigger hop with the step name when a milestone is reached.
+function reactToMerges(merges) {
+  if (merges.length === 0) return;
+
+  const reachedBefore = milestonesReached(state);
+  recordMerges(state, merges);
+  const reachedNow = milestonesReached(state);
+
+  let chain = 1;
+  for (const merge of merges) {
+    chain = effects.merge(merge);
+  }
+  if (reachedNow > reachedBefore) {
+    const last = merges[merges.length - 1];
+    effects.floatText(last.x, last.y - 24, `${MILESTONES[reachedNow - 1].label}!`, 26);
+    fox.hop(FOX.hopBig);
+  } else {
+    fox.hop(FOX.hopSmall + chain * 2); // chained merges get a slightly higher hop
+  }
+}
 
 let lastTime = performance.now();
 
@@ -32,8 +62,12 @@ function frame(now) {
   lastTime = now;
 
   updateDrop(state, pointer, world, dt);
-  recordMerges(state, world.step(dt));
+  const { merges, impacts } = world.step(dt);
+  reactToMerges(merges);
+  for (const impact of impacts) effects.impact(impact);
   updateRules(state, world, dt);
+  effects.update(dt);
+  fox.update(dt, state.status === 'playing' && isStackHigh(world));
 
   draw(ctx, {
     balls: world.balls(),
@@ -44,6 +78,9 @@ function frame(now) {
     dangerProgress: state.dangerTime / DANGER_TIME,
     milestonesReached: milestonesReached(state),
     balance: demoBalance(state),
+    showHint: !hasDropped(state),
+    fox,
+    effects,
   });
   requestAnimationFrame(frame);
 }

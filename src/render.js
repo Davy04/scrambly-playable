@@ -3,7 +3,7 @@ import {
   POP_DURATION, POP_START_SCALE, DANGER_Y,
 } from './config.js';
 import { drawBall } from './balls.js';
-import { drawTopBar } from './ui.js';
+import { drawTopBar, drawHint } from './ui.js';
 
 // Scales the canvas to the largest 360x640 box that fits in the available space (letterbox).
 // After this, every draw call uses logical pixels.
@@ -25,18 +25,26 @@ export function fitCanvas(canvas, availableW, availableH) {
 
 // `scene` is plain data built by main.js:
 // { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, status, dangerProgress (0 to 1),
-//   milestonesReached, balance }
+//   milestonesReached, balance, showHint, fox, effects }
 export function draw(ctx, scene) {
   drawBackground(ctx);
   drawPlayArea(ctx);
   drawDangerLine(ctx, scene.dangerProgress);
+  scene.fox.draw(ctx);
+  if (scene.showHint) drawHint(ctx);
   for (const ball of scene.balls) {
-    drawBall(ctx, ball.position.x, ball.position.y, ball.level, popScale(ball), ball.angle);
+    drawBall(ctx, ball.position.x, ball.position.y, ball.level, {
+      scale: popScale(ball),
+      angle: ball.angle,
+      squash: ball.squash,
+      squashAngle: ball.squashAngle,
+    });
   }
   if (scene.heldLevel !== null) {
     drawAimGuide(ctx, scene.heldX);
     drawBall(ctx, scene.heldX, DROP_Y, scene.heldLevel);
   }
+  scene.effects.draw(ctx);
   drawNextPreview(ctx, scene.nextLevel);
   drawTopBar(ctx, scene.milestonesReached, scene.balance);
   drawEndMessage(ctx, scene.status);
@@ -79,13 +87,20 @@ function drawPlayArea(ctx) {
   ctx.beginPath();
   ctx.roundRect(PLAY_AREA.x, PLAY_AREA.y, PLAY_AREA.w, PLAY_AREA.h, PLAY_AREA.radius);
   ctx.fill();
+  // A thin edge makes the walls readable against the background.
+  ctx.globalAlpha = 0.35;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = COLORS.warmWhite;
+  ctx.stroke();
   ctx.globalAlpha = 1;
 }
 
-// Goes from POP_START_SCALE to 1 while a merged ball's pop timer runs down.
+// Scale of a merged ball while its pop timer runs down: starts at POP_START_SCALE,
+// goes about 10% past full size, then settles at 1 (the "ease out back" curve).
 function popScale(ball) {
-  const progressLeft = ball.popLeft / POP_DURATION;
-  return 1 - (1 - POP_START_SCALE) * progressLeft;
+  const back = ball.popLeft / POP_DURATION; // 1 at the start of the pop, 0 at the end
+  const eased = 1 - 2.7 * back ** 3 + 1.7 * back ** 2;
+  return POP_START_SCALE + (1 - POP_START_SCALE) * eased;
 }
 
 // Dashed vertical line showing where the held ball will fall.

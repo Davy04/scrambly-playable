@@ -186,3 +186,39 @@ button {
   background: transparent;
   border: 0.12em solid #7845D8;
 }
+
+/* Rotate prompt: covers the whole screen, above the game and the end screen. */
+#rotate {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  background: #201338;
+  color: #FFF6E8;
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+#rotate p {
+  margin: 0;
+}
+
+/* A phone outline that keeps turning from sideways to upright. */
+#rotate .phone {
+  width: 2.2em;
+  height: 3.8em;
+  margin-bottom: 0.8em;
+  border: 0.22em solid #F58324;
+  border-radius: 0.5em;
+  animation: phone-turn 1.8s ease-in-out infinite;
+}
+
+@keyframes phone-turn {
+  0%, 20% { transform: rotate(-90deg); }
+  60%, 100% { transform: rotate(0deg); }
+}

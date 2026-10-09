@@ -32,6 +32,13 @@
     </div>
   </div>
 
+  <!-- Shown when a phone is held sideways (see ROTATE_QUERY in config.js). The game is paused while it is up. -->
+  <div id="rotate" hidden>
+    <div class="phone"></div>
+    <p>Rotate your device</p>
+    <p class="fine-print">This game plays in portrait.</p>
+  </div>
+
   <!-- Matter.js is a UMD build, not an ES module: it loads first and exposes the global `Matter`. -->
   <script src="src/lib/matter.min.js"></script>
   <script type="module" src="src/main.js"></script>

@@ -1,4 +1,4 @@
-import { MAX_DT, DANGER_TIME, MILESTONES, FOX } from './config.js';
+import { MAX_DT, DANGER_TIME, MILESTONES, FOX, ROTATE_QUERY } from './config.js';
 import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
@@ -82,12 +82,44 @@ function reactToMerges(merges) {
   }
 }
 
+// Pause. The game stops while the page is hidden or while a phone is held sideways.
+const rotatePrompt = document.getElementById('rotate');
+const phoneSideways = window.matchMedia(ROTATE_QUERY);
+let pageHidden = document.hidden;
+let paused = false;
+
+function updatePause() {
+  rotatePrompt.hidden = !phoneSideways.matches;
+  paused = pageHidden || phoneSideways.matches;
+  if (paused) {
+    // Forget any press in progress, so nothing drops by itself when the game comes back.
+    pointer.down = false;
+    pointer.released = false;
+  }
+}
+
+function setPageHidden(hidden) {
+  pageHidden = hidden;
+  updatePause();
+}
+
+document.addEventListener('visibilitychange', () => setPageHidden(document.hidden), { signal: listeners.signal });
+window.addEventListener('pagehide', () => setPageHidden(true), { signal: listeners.signal });
+window.addEventListener('pageshow', () => setPageHidden(document.hidden), { signal: listeners.signal });
+phoneSideways.addEventListener('change', updatePause, { signal: listeners.signal });
+updatePause();
+
 let lastTime = performance.now();
 
 function tick(now) {
   // Clamped so a slow frame or a return from a hidden tab never simulates a big jump.
   const dt = Math.min((now - lastTime) / 1000, MAX_DT);
-  lastTime = now;
+  lastTime = now; // also updated while paused, so no paused time is ever simulated later
+
+  if (paused) {
+    requestAnimationFrame(tick);
+    return;
+  }
 
   updateDrop(state, pointer, world, dt);
   const { merges, impacts } = world.step(dt);

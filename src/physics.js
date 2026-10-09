@@ -1,7 +1,7 @@
-import { PLAY_AREA, LEVELS, PHYSICS, FIXED_STEP, POP_DURATION, SQUASH } from './config.js';
+import { PLAY_AREA, LEVELS, PHYSICS, FIXED_STEP, POP_DURATION, SQUASH, SHAKE } from './config.js';
 
 // Matter.js is loaded by a classic <script> tag in index.html and lives in the global `Matter`.
-const { Engine, Bodies, Composite, Events } = Matter;
+const { Engine, Bodies, Body, Composite, Events } = Matter;
 
 const MAX_LEVEL = LEVELS.length;
 
@@ -127,6 +127,16 @@ export function createWorld() {
     return Composite.allBodies(engine.world).filter((body) => !body.isStatic);
   }
 
+  // Kicks every ball up and to a random side. The walls go far above the jar, so nothing can leave it.
+  function shake() {
+    for (const ball of balls()) {
+      Body.setVelocity(ball, {
+        x: (Math.random() * 2 - 1) * SHAKE.sideSpeed,
+        y: -SHAKE.upSpeed * (0.5 + Math.random() * 0.5),
+      });
+    }
+  }
+
   // Called on restart: removes the collision listener and every body, so nothing of this world stays alive.
   function destroy() {
     Events.off(engine);
@@ -134,5 +144,5 @@ export function createWorld() {
     Engine.clear(engine);
   }
 
-  return { addBall, step, balls, destroy };
+  return { addBall, step, balls, shake, destroy };
 }

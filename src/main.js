@@ -1,14 +1,15 @@
-import { MAX_DT, DANGER_TIME, DANGER_GRACE, MILESTONES, FOX, ROTATE_QUERY } from './config.js';
+import { MAX_DT, DANGER_TIME, DANGER_GRACE, MILESTONES, FOX, PLAY_AREA, ROTATE_QUERY } from './config.js';
 import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
 import { createEffects } from './effects.js';
 import { createBackground } from './background.js';
 import { createAudio } from './audio.js';
-import { createFox, createHud, createEndScreen } from './ui.js';
+import { createFox, createControls, createEndScreen } from './ui.js';
+import { createHud } from './hud.js';
 import {
   createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
-  isStackHigh, hasDropped, isEndScreenDue,
+  isStackHigh, hasDropped, isEndScreenDue, swapHeld, useShake,
 } from './state.js';
 
 const stage = document.getElementById('stage');
@@ -44,6 +45,7 @@ function startGame() {
   effects = createEffects();
   fox = createFox(foxImage);
   hud = createHud();
+  controls.setShakes(state.shakes);
 }
 
 // Restart. The game loop, the listeners and the resize observer are created once at page load and are
@@ -63,6 +65,19 @@ const endScreen = createEndScreen(listeners.signal, {
   onCta: () => console.log('CTA clicked — demo only', { status: state.status, demoBalance: demoBalance(state) }),
 });
 
+const controls = createControls(listeners.signal, {
+  onSwap: () => {
+    if (swapHeld(state)) audio.swap();
+  },
+  onShake: () => {
+    if (!useShake(state)) return;
+    world.shake();
+    audio.shake();
+    fox.hop(FOX.hopBig);
+    controls.setShakes(state.shakes);
+  },
+});
+
 startGame();
 
 function reactToMerges(merges) {
@@ -72,18 +87,22 @@ function reactToMerges(merges) {
   recordMerges(state, merges);
   const reachedNow = milestonesReached(state);
 
-  let chain = 1;
   for (const merge of merges) {
-    chain = effects.merge(merge);
+    effects.merge(merge);
     audio.merge(merge.level);
+    if (merge.chain > 1) effects.floatText(merge.x, merge.y + 22, `Combo x${merge.chain}`);
   }
+  const last = merges[merges.length - 1];
   if (reachedNow > reachedBefore) {
-    const last = merges[merges.length - 1];
     effects.floatText(last.x, last.y - 24, `${MILESTONES[reachedNow - 1].label}!`, 26);
     fox.hop(FOX.hopBig);
-    if (reachedNow < MILESTONES.length) audio.milestone(); // the last step plays the win sound instead
+    if (reachedNow < MILESTONES.length) {
+      audio.milestone(); // the last step plays the win sound instead
+      effects.floatText(62, PLAY_AREA.y + PLAY_AREA.h - 12, '+1 Shake', 16);
+      controls.setShakes(state.shakes);
+    }
   } else {
-    fox.hop(FOX.hopSmall + chain * 2);
+    fox.hop(FOX.hopSmall + Math.min(last.chain, 4) * 2);
   }
 }
 
@@ -117,7 +136,8 @@ let lastTime = performance.now();
 
 function tick(now) {
   // Clamped so a slow frame or a return from a hidden tab never simulates a big jump.
-  const dt = Math.min((now - lastTime) / 1000, MAX_DT);
+  // Never negative: the first frame's timestamp can be slightly earlier than the performance.now() taken before it.
+  const dt = Math.max(0, Math.min((now - lastTime) / 1000, MAX_DT));
   lastTime = now;
 
   if (paused) {
@@ -139,7 +159,7 @@ function tick(now) {
   background.update(dt);
   hud.update(dt, milestonesReached(state), demoBalance(state));
   fox.update(dt, state.status === 'playing' && isStackHigh(world));
-  if (isEndScreenDue(state)) endScreen.show(state.status, demoBalance(state));
+  if (isEndScreenDue(state)) endScreen.show(state.status, demoBalance(state), milestonesReached(state));
 
   draw(ctx, {
     balls: world.balls(),

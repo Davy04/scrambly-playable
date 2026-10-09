@@ -25,7 +25,7 @@ A portrait, mobile-first merge playable (Suika-style) for **Scrambly**, a reward
 - Plain JavaScript (ES modules) + Canvas 2D. No build step, no bundler, no framework.
 - **Matter.js** for physics, vendored in `src/lib/` (no CDN).
 - Pointer Events for input (mouse + touch).
-- **Audio:** short sound effects only (`src/audio.js`), started after the first press, with a mute button, silenced while paused or hidden. No music.
+- **Audio:** short sound effects and one quiet music loop (`src/audio.js`), started after the first press, with a mute button, silenced while paused or hidden.
 - Art: the fox from the Scrambly kit in `assets/`, plus simple icons drawn in code. No real brand logos.
 - Logical resolution **360×640**, scaled to fit with letterbox. Game logic and physics always use logical coordinates.
 - Palette: orange `#F58324`, purple `#7845D8`, deep ink `#201338`, warm white `#FFF6E8`.
@@ -89,6 +89,9 @@ BRIEF.md  IDEAS.md  NOTES.md  README.md  CLAUDE.md
 - Drop an item from the top at the pointer's X. Cooldown between drops. Show the next item.
 - Two items of the same level that touch merge into the next level at their midpoint. Max level does not merge.
 - 8 levels; only levels 1-4 are dropped. Milestones at levels 3, 6, 8 → Discover, Play, Redeem. Demo balance rises at each milestone.
+- Swap: tapping the Next bubble swaps the held item with the next one.
+- Shake: a button that kicks every ball. One use at the start, one more per milestone reached.
+- Combo: merges that follow each other within 0.9s add a small bonus to the demo balance.
 - Danger line: an item resting above it for ~2s triggers the loss state.
 - Early drops are biased toward easy combos so the player reaches the CTA reliably.
 - Target session: 60-90 seconds.

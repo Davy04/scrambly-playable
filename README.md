@@ -22,7 +22,7 @@ The ZIP is made from the last commit, so commit first.
 git archive --format=zip -o scrambly-playable.zip HEAD index.html src assets README.md NOTES.md
 ```
 
-`index.html` ends up at the ZIP root. The limit is 5,000,000 bytes; the build is about 0.2 MB.
+`index.html` ends up at the ZIP root. The limit is 5,000,000 bytes; the build is about 2.1 MB (most of it is the music).
 
 ## Tested browsers and devices
 
@@ -39,7 +39,7 @@ Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse
 - Drops are random, so the session length varies and a loss is possible. Both end screens (win and loss) show the CTA.
 - The jar is drawn with rounded bottom corners, but the physics floor is square: a small ball in a corner can overlap the rim by a few pixels.
 - The squash on impact is visual only; the physics shapes stay perfect circles.
-- Sound: the mute choice is not saved between page loads. On an iPhone the hardware silent switch also mutes the game. If the pop sample fails to load, merges are silent and the game still works.
+- Sound: the mute choice is not saved between page loads. On an iPhone the hardware silent switch also mutes the game. If a sound file fails to load, that sound is missing and the game still works. The music is an mp3 played in a loop, so there can be a short gap each time it repeats.
 - No reduced-motion setting.
 
 ## Untested behavior
@@ -58,4 +58,5 @@ TODO: remove the lines that were tested.
 - **Matter.js 0.20.0** — physics engine by Liam Brummitt, MIT License. Vendored in `src/lib/matter.min.js`. https://brm.io/matter-js/
 - **Fredoka** — font by The Fredoka Project Authors, SIL Open Font License 1.1. Latin subset in `assets/fonts/Fredoka-latin.woff2`, license in `assets/fonts/OFL.txt`.
 - **Merge pop sound** — `assets/audio/bubble-pop.mp3`, "Bubble Pop 06" by Universfield, from Pixabay (Pixabay Content License). TODO: confirm the title and license on the download page.
+- **Background music** — `assets/audio/music-loop.mp3`, "Happy Ukulele" by Waveloom, from Pixabay (Pixabay Content License). TODO: confirm the title and license on the download page.
 - All other art is drawn in code (Canvas 2D). All other sounds are synthesized in code (Web Audio API).

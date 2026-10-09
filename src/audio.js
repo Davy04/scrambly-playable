@@ -1,8 +1,11 @@
 const POP_URL = 'assets/audio/bubble-pop.mp3';
+const MUSIC_URL = 'assets/audio/music-loop.mp3';
 const VOLUME = 0.5;
+const MUSIC_VOLUME = 0.25; // relative to the sound effects, so the music stays behind them
 const WIN_NOTES = [523, 659, 784, 1047]; // Hz: C, E, G and the next C
 
-// Sound effects. The merge pop is a recorded sample; the rest are short tones made with oscillators.
+// Sound effects and background music. The merge pop and the music are recorded files;
+// the other effects are short tones made with oscillators.
 // Created once at page load; a restart does not touch it.
 export function createAudio(signal) {
   let context = null; // created on the first press: browsers block audio before a user gesture
@@ -22,16 +25,27 @@ export function createAudio(signal) {
     master = context.createGain();
     master.gain.value = muted ? 0 : VOLUME;
     master.connect(context.destination);
-    loadPop();
+    load(POP_URL).then((buffer) => { popBuffer = buffer; }).catch(() => {});
+    load(MUSIC_URL).then(startMusic).catch(() => {});
   }
 
-  // A local file, so no external request. The game works without it if loading fails.
-  function loadPop() {
-    fetch(POP_URL)
+  // Local files, so no external request. The game works without them if loading fails.
+  function load(url) {
+    return fetch(url)
       .then((response) => response.arrayBuffer())
-      .then((data) => context.decodeAudioData(data))
-      .then((buffer) => { popBuffer = buffer; })
-      .catch(() => {});
+      .then((data) => context.decodeAudioData(data));
+  }
+
+  // Started once and never stopped: mute and pause act on everything through `master` and the context.
+  function startMusic(buffer) {
+    const source = context.createBufferSource();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    source.loop = true;
+    gain.gain.value = MUSIC_VOLUME;
+    source.connect(gain);
+    gain.connect(master);
+    source.start();
   }
 
   // One tone that fades out. `slideTo` bends the pitch, `delay` (seconds) schedules it later.
@@ -65,6 +79,14 @@ export function createAudio(signal) {
     source.start();
   }
 
+  function swap() {
+    tone(520, 0.08, { slideTo: 700 });
+  }
+
+  function shake() {
+    tone(140, 0.3, { slideTo: 60, type: 'triangle' });
+  }
+
   function milestone() {
     tone(660, 0.12, { type: 'triangle' });
     tone(880, 0.2, { type: 'triangle', delay: 0.1 });
@@ -95,5 +117,5 @@ export function createAudio(signal) {
   }, { signal });
   window.addEventListener('pointerdown', unlock, { signal });
 
-  return { drop, merge, milestone, win, lose, setPaused };
+  return { drop, swap, shake, merge, milestone, win, lose, setPaused };
 }

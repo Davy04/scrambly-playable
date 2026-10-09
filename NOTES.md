@@ -3,7 +3,7 @@
 ## Tools and assets used
 
 - Claude Code (AI pair programmer): plans, first drafts of code, reviewed and corrected by me.
-- Matter.js 0.20.0 (physics), Fredoka font, the supplied Scrambly fox, one pop sound I picked for merges. See credits in `README.md`.
+- Matter.js 0.20.0 (physics), Fredoka font, the supplied Scrambly fox, one pop sound and one music loop I picked. See credits in `README.md`.
 - Web Audio API for the other sounds (synthesized in code, no files).
 
 ## What I contributed

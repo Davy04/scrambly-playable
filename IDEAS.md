@@ -61,7 +61,7 @@ Everything is drawn in Canvas 2D, no external art except the fox.
 - Orientation: **portrait** (logical size 360x640, letterboxed to fit any screen).
 - Stack: **plain JS + Canvas 2D**, **Matter.js** (bundled locally) for physics.
 - Input: Pointer Events (mouse + touch).
-- Audio: short sound effects, added in the final polish (first decision was none). One recorded pop for merges, the rest synthesized. Starts after the first press, has a mute button, is silenced while hidden.
+- Audio: short sound effects, added in the final polish (first decision was none). One recorded pop for merges, one quiet music loop, the rest synthesized. Starts after the first press, has a mute button, is silenced while hidden.
 - Art: soft toy look, generic sports/arcade balls, no real brand logos or league marks.
 - Palette: orange `#F58324`, purple `#7845D8`, deep ink `#201338`, warm white `#FFF6E8`.
 - Target play time: 60-90 seconds.

@@ -164,6 +164,10 @@ function drawNextPreview(ctx, level) {
   ctx.font = '700 13px Fredoka, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = COLORS.warmWhite;
-  ctx.fillText('Next', x, y - radius - 6);
+  ctx.fillText('Next', x, y - radius - 17);
+  ctx.globalAlpha = 0.75;
+  ctx.font = '500 10px Fredoka, sans-serif';
+  ctx.fillText('tap to swap', x, y - radius - 5);
+  ctx.globalAlpha = 1;
   drawBall(ctx, x, y, level);
 }

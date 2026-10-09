@@ -13,12 +13,9 @@ export function createEffects() {
   let rings = [];
   const squashedBalls = new Set();
 
-  let sinceLastMerge = Infinity;
-  let chain = 0;
-
-  function merge({ x, y, level, ball, sources }) {
-    chain = sinceLastMerge < MERGE_FX.chainWindow ? Math.min(chain + 1, MERGE_FX.maxChain) : 1;
-    sinceLastMerge = 0;
+  // `chain` is the combo step counted by the game rules: a longer combo gets a slightly bigger effect.
+  function merge({ x, y, level, ball, sources, chain: comboStep }) {
+    const chain = Math.min(comboStep, MERGE_FX.maxChain);
 
     for (const source of sources) {
       addGhost(source, { x, y }, level - 1, MERGE_FX.ghostLife, 0);
@@ -27,7 +24,6 @@ export function createEffects() {
     burst(x, y, level, 4 + chain * 2);
     if (level === LEVELS.length) confetti(x, y);
     impact({ ball, speed: Infinity, angle: Math.PI / 2 });
-    return chain;
   }
 
   function addGhost(from, to, level, duration, delay, angle = 0) {
@@ -83,7 +79,6 @@ export function createEffects() {
   }
 
   function update(dt) {
-    sinceLastMerge += dt;
 
     for (const particle of particles) {
       particle.vy += PARTICLE_GRAVITY * dt;

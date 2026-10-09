@@ -50,8 +50,7 @@ export const MERGE_FX = {
   ringLife: 0.3,
   particleLife: 0.45,
   maxParticles: 60,
-  chainWindow: 0.9, // merges closer than this (seconds) count as a chain
-  maxChain: 4,
+  maxChain: 4, // the merge effect stops growing after this many chained merges
   dissolveLife: 0.35,
   dissolveStagger: 0.3,
 };
@@ -72,10 +71,23 @@ export const NEXT_PREVIEW = { x: 300, y: 135, radius: 40 }; // the bubble fits t
 export const EASY_DROPS = 6;
 export const EASY_MAX_LEVEL = 2;
 
+// Merges that follow each other quickly form a combo. Each step after the first adds to the demo balance.
+export const COMBO = {
+  window: 0.9, // seconds: a merge this soon after the last one continues the combo
+  bonus: 10, // demo balance added per combo step: x2 gives 10, x3 gives 20...
+};
+
+// The Shake button kicks every ball, to loosen a stuck stack. One use at the start, one more per step reached.
+export const SHAKE = {
+  start: 1,
+  sideSpeed: 5, // pixels per physics step
+  upSpeed: 5,
+};
+
 export const MILESTONES = [
-  { level: 3, label: 'Discover', balance: 100 },
-  { level: 6, label: 'Play', balance: 250 },
-  { level: 8, label: 'Redeem', balance: 500 },
+  { level: 3, label: 'Discover', text: 'Find new games and apps', balance: 100 },
+  { level: 6, label: 'Play', text: 'Play and make progress', balance: 250 },
+  { level: 8, label: 'Redeem', text: 'Collect your rewards', balance: 500 },
 ];
 
 export const FOX = {

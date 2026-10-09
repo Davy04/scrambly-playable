@@ -1,7 +1,7 @@
 import {
   PLAY_AREA, LEVELS, MAX_DROP_LEVEL, DROP_COOLDOWN, DROP_Y,
   EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED, NERVOUS_MARGIN, MILESTONES,
-  END_DELAY,
+  END_DELAY, COMBO, SHAKE,
 } from './config.js';
 
 function dealLevel(state) {
@@ -18,6 +18,10 @@ export function createState() {
     dangerTime: 0,
     bestMergedLevel: 0,
     endTime: 0,
+    chain: 0, // merges in the current combo
+    sinceMerge: Infinity, // seconds since the last merge
+    bonus: 0, // demo balance earned from combos
+    shakes: SHAKE.start,
   };
   state.heldLevel = dealLevel(state);
   state.nextLevel = dealLevel(state);
@@ -33,6 +37,20 @@ export function aimX(state, pointerX) {
   const min = PLAY_AREA.x + radius;
   const max = PLAY_AREA.x + PLAY_AREA.w - radius;
   return Math.min(Math.max(pointerX, min), max);
+}
+
+// Swaps the ball in hand with the next one. Returns false when the game is over.
+export function swapHeld(state) {
+  if (state.status !== 'playing') return false;
+  [state.heldLevel, state.nextLevel] = [state.nextLevel, state.heldLevel];
+  return true;
+}
+
+// Spends one shake. Returns false when there is none left or the game is over.
+export function useShake(state) {
+  if (state.status !== 'playing' || state.shakes === 0) return false;
+  state.shakes -= 1;
+  return true;
 }
 
 // Returns true on the frame a ball is dropped.
@@ -55,10 +73,17 @@ export function updateDrop(state, pointer, world, dt) {
 }
 
 // Milestones count merged balls only: dropping a level 3 ball does not reach "Discover".
+// Also writes the combo step on each merge (`merge.chain`, 1 for a single merge) for the feedback.
 export function recordMerges(state, merges) {
+  const reachedBefore = milestonesReached(state);
   for (const merge of merges) {
     state.bestMergedLevel = Math.max(state.bestMergedLevel, merge.level);
+    state.chain = state.sinceMerge < COMBO.window ? state.chain + 1 : 1;
+    state.sinceMerge = 0;
+    state.bonus += COMBO.bonus * (state.chain - 1);
+    merge.chain = state.chain;
   }
+  state.shakes += milestonesReached(state) - reachedBefore;
 }
 
 export function milestonesReached(state) {
@@ -67,7 +92,7 @@ export function milestonesReached(state) {
 
 export function demoBalance(state) {
   const reached = milestonesReached(state);
-  return reached === 0 ? 0 : MILESTONES[reached - 1].balance;
+  return (reached === 0 ? 0 : MILESTONES[reached - 1].balance) + state.bonus;
 }
 
 // A falling ball also passes above the line, so only slow balls count.
@@ -91,6 +116,7 @@ export function hasDropped(state) {
 }
 
 export function updateRules(state, world, dt) {
+  state.sinceMerge += dt;
   if (state.status !== 'playing') {
     state.endTime += dt;
     return;

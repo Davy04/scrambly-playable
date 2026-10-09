@@ -14,6 +14,8 @@
       <div id="overlay">
         <button id="restart" type="button">&#8635; Restart</button>
         <button id="mute" type="button" aria-pressed="false">Sound on</button>
+        <button id="shake" type="button">Shake x1</button>
+        <button id="swap" type="button" aria-label="Swap the held ball with the next one"></button>
 
         <!-- Comes after the restart button on purpose: its dark layer covers the button and blocks it.
              While the end screen is open, "Play again" is the restart. -->
@@ -21,11 +23,42 @@
           <div class="card">
             <h1 id="end-title"></h1>
             <p id="end-text"></p>
+            <ul id="end-steps" aria-label="Scrambly steps">
+              <li>Discover</li>
+              <li>Play</li>
+              <li>Redeem</li>
+            </ul>
             <p id="end-balance"></p>
             <p class="fine-print">Demo only. Not real earnings.</p>
             <button id="cta" type="button">Explore Scrambly</button>
             <p id="cta-message" role="status" hidden>CTA clicked — demo only</p>
             <button id="again" type="button">Play again</button>
+          </div>
+        </div>
+
+        <!-- Shown once, when the page loads. The small pictures are CSS animations (see style.css). -->
+        <div id="tutorial">
+          <div class="card">
+            <h1>How to play</h1>
+            <ol class="how">
+              <li>
+                <span class="demo demo-aim"><i></i></span>
+                <p><b>Drag</b> to aim, <b>release</b> to drop.</p>
+              </li>
+              <li>
+                <span class="demo demo-merge"><i></i><i></i><i></i></span>
+                <p>Two equal balls <b>merge</b> into a bigger one. Reach the Scrambly coin!</p>
+              </li>
+              <li>
+                <span class="demo demo-swap"><i></i><i></i></span>
+                <p>Tap <b>Next</b> to swap your ball with the next one.</p>
+              </li>
+              <li>
+                <span class="demo demo-shake"><i></i><i></i><i></i></span>
+                <p>Stuck? <b>Shake</b> tosses every ball. You earn one more at each step.</p>
+              </li>
+            </ol>
+            <button id="tutorial-play" type="button">Play</button>
           </div>
         </div>
       </div>

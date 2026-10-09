@@ -15,6 +15,11 @@ body {
   font-family: 'Fredoka', system-ui, sans-serif;
 }
 
+/* An element with the `hidden` attribute stays hidden even if a rule below sets its display. */
+[hidden] {
+  display: none !important;
+}
+
 /* Fixed, full-screen container. Its padding keeps the game out of the notch and home bar. */
 #stage {
   position: fixed;
@@ -33,9 +38,151 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Size is set from JS (render.js). The outline marks the game area on wide desktop windows.
-   It is a box-shadow, not a border, so it does not change the canvas box used for pointer mapping. */
+/* Width, height and font-size are set from JS (render.js). 1em here is 16 logical game pixels,
+   so everything in the overlay scales together with the canvas.
+   The outline marks the game area on wide desktop windows. */
+#frame {
+  position: relative;
+  flex: none;
+  box-shadow: 0 0 0 2px #7845D8;
+}
+
 #game {
   display: block;
-  box-shadow: 0 0 0 2px #7845D8;
+  width: 100%;
+  height: 100%;
+}
+
+/* HTML controls on top of the canvas. Only the controls take clicks; the rest lets them reach the canvas. */
+#overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: #201338;
+}
+
+button {
+  pointer-events: auto;
+  font: inherit;
+  font-weight: 600;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* In the strip under the play area, available during the whole game. */
+#restart {
+  position: absolute;
+  left: 50%;
+  bottom: 0.35em;
+  transform: translateX(-50%);
+  height: 2.4em;
+  padding: 0 1.2em;
+  font-size: 0.9em;
+  color: #FFF6E8;
+  background: rgba(32, 19, 56, 0.55);
+  border: 0.1em solid rgba(255, 246, 232, 0.5);
+}
+
+/* End screen: a dark layer with a card in the middle. The layer covers the whole game,
+   so nothing behind the card (canvas or restart button) can be clicked. */
+#end {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.72);
+  /* Both animations start again every time the `hidden` attribute is removed. */
+  animation: end-fade 0.25s ease-out;
+}
+
+.card {
+  width: 17em;
+  padding: 1.4em 1.2em;
+  border-radius: 1.4em;
+  background: #FFF6E8;
+  text-align: center;
+  animation: card-bounce 0.65s both;
+}
+
+/* The pieces inside the card pop in one after the other, a moment after the card itself. */
+.card > * {
+  animation: piece-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.card > :nth-child(1) { animation-delay: 0.2s; }
+.card > :nth-child(2) { animation-delay: 0.26s; }
+.card > :nth-child(3) { animation-delay: 0.32s; }
+.card > :nth-child(4) { animation-delay: 0.36s; }
+.card > :nth-child(5) { animation-delay: 0.44s; }
+.card > :nth-child(6) { animation-delay: 0s; } /* the CTA confirmation appears on click, without waiting */
+.card > :nth-child(7) { animation-delay: 0.52s; }
+
+@keyframes end-fade {
+  from { opacity: 0; }
+}
+
+/* Scale from nothing, overshoot, dip under, small overshoot, settle: the classic "bounce in" tween. */
+@keyframes card-bounce {
+  0% { opacity: 0; transform: scale(0); animation-timing-function: ease-out; }
+  45% { opacity: 1; transform: scale(1.14); animation-timing-function: ease-in-out; }
+  65% { transform: scale(0.94); animation-timing-function: ease-in-out; }
+  82% { transform: scale(1.04); animation-timing-function: ease-in-out; }
+  100% { transform: scale(1); }
+}
+
+/* The curve on the rule above ("ease out back") makes each piece overshoot a little by itself. */
+@keyframes piece-pop {
+  from { opacity: 0; transform: scale(0.5); }
+}
+
+.card h1 {
+  margin: 0 0 0.3em;
+  font-size: 1.9em;
+  font-weight: 700;
+  color: #7845D8;
+}
+
+.card p {
+  margin: 0 0 0.6em;
+  line-height: 1.3;
+}
+
+#end-balance {
+  margin-bottom: 0.1em;
+  font-size: 1.2em;
+  font-weight: 700;
+}
+
+.fine-print {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+#cta {
+  width: 100%;
+  height: 3.2em;
+  margin-top: 0.4em;
+  font-size: 1.2em;
+  font-weight: 700;
+  color: #201338;
+  background: #F58324;
+  box-shadow: 0 0.25em 0 #B85A0E;
+}
+
+#cta-message {
+  margin: 0.9em 0 0;
+  font-weight: 600;
+  color: #7845D8;
+}
+
+#again {
+  width: 100%;
+  height: 2.8em;
+  margin-top: 0.9em;
+  color: #7845D8;
+  background: transparent;
+  border: 0.12em solid #7845D8;
 }

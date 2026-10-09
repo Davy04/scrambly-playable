@@ -57,6 +57,8 @@ export const MERGE_FX = {
   maxParticles: 60, // hard limit on particles alive at the same time
   chainWindow: 0.9, // merges closer than this (seconds) count as a chain
   maxChain: 4, // the feedback stops growing after this many chained merges
+  dissolveLife: 0.35, // seconds each ball takes to shrink away on restart
+  dissolveStagger: 0.3, // the balls start dissolving at random moments inside this many seconds
 };
 
 // Squash on impact: balls are drawn slightly flattened for a moment after a hard hit.
@@ -100,4 +102,5 @@ export const WIN_LEVEL = LEVELS.length; // the game is won when a ball of the la
 export const DANGER_Y = PLAY_AREA.y + 70; // the stack must stay below this line
 export const DANGER_TIME = 2; // seconds a ball may rest above the line before the game is lost
 export const REST_SPEED = 1; // a ball slower than this (pixels per physics step) counts as resting
+export const END_DELAY = 0.8; // seconds between the end of the game and the end screen, so the last merge is seen
 export const NERVOUS_MARGIN = 50; // the fox gets nervous when the stack is this close to the danger line

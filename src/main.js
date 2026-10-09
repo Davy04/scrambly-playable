@@ -3,13 +3,14 @@ import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
 import { createEffects } from './effects.js';
-import { createFox } from './ui.js';
+import { createFox, createEndScreen } from './ui.js';
 import {
   createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
-  isStackHigh, hasDropped,
+  isStackHigh, hasDropped, isEndScreenDue,
 } from './state.js';
 
 const stage = document.getElementById('stage');
+const frame = document.getElementById('frame');
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
@@ -20,17 +21,44 @@ const pointer = createPointer(canvas, listeners.signal);
 // Fires on window resize, rotation and when the mobile browser bars show or hide.
 // contentRect is the stage minus its safe-area padding.
 const stageObserver = new ResizeObserver(([entry]) => {
-  fitCanvas(canvas, entry.contentRect.width, entry.contentRect.height);
+  fitCanvas(frame, canvas, entry.contentRect.width, entry.contentRect.height);
 });
 stageObserver.observe(stage);
 
 const foxImage = new Image();
 foxImage.src = 'assets/scrambly-fox-reference.webp';
 
-const world = createWorld();
-const state = createState();
-const effects = createEffects();
-const fox = createFox(foxImage);
+// Everything that belongs to one play session. reset() throws these away and builds new ones.
+let world;
+let state;
+let effects;
+let fox;
+
+function startGame() {
+  world = createWorld();
+  state = createState();
+  effects = createEffects();
+  fox = createFox(foxImage);
+}
+
+// Restart. The game loop, the listeners and the resize observer are created once at page load and are
+// not touched here, so restarting any number of times cannot duplicate them.
+function reset() {
+  const oldBalls = world.balls();
+  world.destroy();
+  startGame();
+  effects.dissolve(oldBalls); // the new game's effects play the old balls out
+  pointer.down = false;
+  pointer.released = false;
+  endScreen.hide();
+}
+
+const endScreen = createEndScreen(listeners.signal, {
+  onRestart: reset,
+  onCta: () => console.log('CTA clicked — demo only', { status: state.status, demoBalance: demoBalance(state) }),
+});
+
+startGame();
 
 // Feedback for the merges of this frame: the merge effect, a fox hop,
 // and a bigger hop with the step name when a milestone is reached.
@@ -56,7 +84,7 @@ function reactToMerges(merges) {
 
 let lastTime = performance.now();
 
-function frame(now) {
+function tick(now) {
   // Clamped so a slow frame or a return from a hidden tab never simulates a big jump.
   const dt = Math.min((now - lastTime) / 1000, MAX_DT);
   lastTime = now;
@@ -68,13 +96,13 @@ function frame(now) {
   updateRules(state, world, dt);
   effects.update(dt);
   fox.update(dt, state.status === 'playing' && isStackHigh(world));
+  if (isEndScreenDue(state)) endScreen.show(state.status, demoBalance(state));
 
   draw(ctx, {
     balls: world.balls(),
     heldLevel: isHolding(state) ? state.heldLevel : null,
     heldX: aimX(state, pointer.x),
     nextLevel: state.nextLevel,
-    status: state.status,
     dangerProgress: state.dangerTime / DANGER_TIME,
     milestonesReached: milestonesReached(state),
     balance: demoBalance(state),
@@ -82,10 +110,10 @@ function frame(now) {
     fox,
     effects,
   });
-  requestAnimationFrame(frame);
+  requestAnimationFrame(tick);
 }
 
 // Wait for the font so the first frame does not draw text in a fallback font. The game starts even if it fails.
 await document.fonts.load('600 14px Fredoka').catch(() => {});
 lastTime = performance.now();
-requestAnimationFrame(frame);
+requestAnimationFrame(tick);

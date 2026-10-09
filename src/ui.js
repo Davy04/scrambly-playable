@@ -104,3 +104,38 @@ export function drawHint(ctx) {
   ctx.font = '500 14px Fredoka, sans-serif';
   ctx.fillText('Match two balls to merge them', LOGICAL_W / 2, PLAY_AREA.y + PLAY_AREA.h / 2 + 24);
 }
+
+const END_TEXT = {
+  won: { title: 'You redeemed!', text: "Discover games, play, redeem rewards. That's Scrambly." },
+  lost: { title: 'So close!', text: 'The stack got too high. Try again, or see how Scrambly works.' },
+};
+
+// The HTML controls: the restart button, and the end screen with the CTA.
+// Listeners are added once, with `signal`, and are never added again on restart.
+export function createEndScreen(signal, { onRestart, onCta }) {
+  const panel = document.getElementById('end');
+  const ctaMessage = document.getElementById('cta-message');
+
+  document.getElementById('restart').addEventListener('click', onRestart, { signal });
+  document.getElementById('again').addEventListener('click', onRestart, { signal });
+  document.getElementById('cta').addEventListener('click', () => {
+    // Demo only: confirm on screen and let the game log it. The button has no link, so nothing navigates.
+    ctaMessage.hidden = false;
+    onCta();
+  }, { signal });
+
+  function show(status, balance) {
+    if (!panel.hidden) return; // already showing
+    document.getElementById('end-title').textContent = END_TEXT[status].title;
+    document.getElementById('end-text').textContent = END_TEXT[status].text;
+    document.getElementById('end-balance').textContent = `Demo balance: ${balance}`;
+    panel.hidden = false;
+  }
+
+  function hide() {
+    panel.hidden = true;
+    ctaMessage.hidden = true;
+  }
+
+  return { show, hide };
+}

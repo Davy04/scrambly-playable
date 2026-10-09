@@ -8,7 +8,28 @@
 </head>
 <body>
   <div id="stage">
-    <canvas id="game"></canvas>
+    <!-- The frame is sized from JS to the largest 9:16 box that fits. The canvas and the overlay both fill it. -->
+    <div id="frame">
+      <canvas id="game"></canvas>
+
+      <div id="overlay">
+        <button id="restart" type="button">&#8635; Restart</button>
+
+        <!-- Comes after the restart button on purpose: its dark layer covers the button and blocks it.
+             While the end screen is open, "Play again" is the restart. -->
+        <div id="end" hidden>
+          <div class="card">
+            <h1 id="end-title"></h1>
+            <p id="end-text"></p>
+            <p id="end-balance"></p>
+            <p class="fine-print">Demo only. Not real earnings.</p>
+            <button id="cta" type="button">Explore Scrambly</button>
+            <p id="cta-message" role="status" hidden>CTA clicked — demo only</p>
+            <button id="again" type="button">Play again</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Matter.js is a UMD build, not an ES module: it loads first and exposes the global `Matter`. -->

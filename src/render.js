@@ -5,16 +5,18 @@ import {
 import { drawBall } from './balls.js';
 import { drawTopBar, drawHint } from './ui.js';
 
-// Scales the canvas to the largest 360x640 box that fits in the available space (letterbox).
-// After this, every draw call uses logical pixels.
-export function fitCanvas(canvas, availableW, availableH) {
+// Scales the frame to the largest 360x640 box that fits in the available space (letterbox).
+// The canvas fills the frame. After this, every draw call uses logical pixels.
+export function fitCanvas(frame, canvas, availableW, availableH) {
   if (availableW <= 0 || availableH <= 0) return;
 
   const scale = Math.min(availableW / LOGICAL_W, availableH / LOGICAL_H);
   const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
 
-  canvas.style.width = `${LOGICAL_W * scale}px`;
-  canvas.style.height = `${LOGICAL_H * scale}px`;
+  frame.style.width = `${LOGICAL_W * scale}px`;
+  frame.style.height = `${LOGICAL_H * scale}px`;
+  // The HTML overlay sizes everything in em, so this one value scales it with the canvas.
+  frame.style.fontSize = `${16 * scale}px`;
   canvas.width = Math.round(LOGICAL_W * scale * dpr);
   canvas.height = Math.round(LOGICAL_H * scale * dpr);
 
@@ -24,7 +26,7 @@ export function fitCanvas(canvas, availableW, availableH) {
 }
 
 // `scene` is plain data built by main.js:
-// { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, status, dangerProgress (0 to 1),
+// { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, dangerProgress (0 to 1),
 //   milestonesReached, balance, showHint, fox, effects }
 export function draw(ctx, scene) {
   drawBackground(ctx);
@@ -47,7 +49,6 @@ export function draw(ctx, scene) {
   scene.effects.draw(ctx);
   drawNextPreview(ctx, scene.nextLevel);
   drawTopBar(ctx, scene.milestonesReached, scene.balance);
-  drawEndMessage(ctx, scene.status);
 }
 
 // Dashed orange line. It gets thicker and more solid as the loss timer fills up.
@@ -62,15 +63,6 @@ function drawDangerLine(ctx, progress) {
   ctx.lineTo(PLAY_AREA.x + PLAY_AREA.w, DANGER_Y);
   ctx.stroke();
   ctx.restore();
-}
-
-// T4 placeholder. The real end screen with the CTA and restart comes in T6.
-function drawEndMessage(ctx, status) {
-  if (status === 'playing') return;
-  ctx.font = '700 32px Fredoka, sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = COLORS.warmWhite;
-  ctx.fillText(status === 'won' ? 'You redeemed!' : 'Try again', LOGICAL_W / 2, PLAY_AREA.y + 120);
 }
 
 function drawBackground(ctx) {

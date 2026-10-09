@@ -9,7 +9,7 @@ const PARTICLE_GRAVITY = 300; // logical pixels per second squared
 export function createEffects() {
   let particles = [];
   let texts = [];
-  let ghosts = []; // the two balls that merged, shrinking into the new one
+  let ghosts = []; // pictures of balls that are gone: shrinking into a merge, or dissolving on restart
   let rings = []; // one expanding circle per merge
   const squashedBalls = new Set(); // balls that are currently drawn deformed
 
@@ -23,13 +23,28 @@ export function createEffects() {
     sinceLastMerge = 0;
 
     for (const source of sources) {
-      ghosts.push({ fromX: source.x, fromY: source.y, toX: x, toY: y, level: level - 1, life: MERGE_FX.ghostLife });
+      addGhost(source, { x, y }, level - 1, MERGE_FX.ghostLife, 0);
     }
     rings.push({ x, y, radius: LEVELS[level - 1].radius * (1 + 0.1 * chain), life: MERGE_FX.ringLife });
     burst(x, y, level, 4 + chain * 2);
     // The new ball appears with the strongest squash its size allows, flattened vertically.
     impact({ ball, speed: Infinity, angle: Math.PI / 2 });
     return chain;
+  }
+
+  // A ball picture that moves from `from` to `to` while it shrinks and fades. It waits `delay` seconds first.
+  function addGhost(from, to, level, duration, delay, angle = 0) {
+    ghosts.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y, level, angle, duration, life: duration, delay });
+  }
+
+  // Restart: the balls of the old game shrink away where they were, a few at a time, with a small puff each.
+  // They are pictures only; the old physics world is already gone.
+  function dissolve(oldBalls) {
+    for (const ball of oldBalls) {
+      const delay = Math.random() * MERGE_FX.dissolveStagger;
+      addGhost(ball.position, ball.position, ball.level, MERGE_FX.dissolveLife, delay, ball.angle);
+      burst(ball.position.x, ball.position.y, ball.level, 3);
+    }
   }
 
   // A hard hit reported by the physics. Bigger balls deform less, so they read as heavier.
@@ -80,7 +95,10 @@ export function createEffects() {
       text.y -= 40 * dt;
       text.life -= dt;
     }
-    for (const ghost of ghosts) ghost.life -= dt;
+    for (const ghost of ghosts) {
+      if (ghost.delay > 0) ghost.delay -= dt;
+      else ghost.life -= dt;
+    }
     for (const ring of rings) ring.life -= dt;
 
     particles = particles.filter((particle) => particle.life > 0);
@@ -100,10 +118,10 @@ export function createEffects() {
 
   function draw(ctx) {
     for (const ghost of ghosts) {
-      const left = ghost.life / MERGE_FX.ghostLife; // 1 at the start, 0 at the end
+      const left = ghost.life / ghost.duration; // 1 at the start, 0 at the end
       const x = ghost.toX + (ghost.fromX - ghost.toX) * left;
       const y = ghost.toY + (ghost.fromY - ghost.toY) * left;
-      drawBall(ctx, x, y, ghost.level, { scale: 0.5 + 0.5 * left, alpha: left });
+      drawBall(ctx, x, y, ghost.level, { scale: 0.4 + 0.6 * left, alpha: left, angle: ghost.angle });
     }
 
     ctx.strokeStyle = COLORS.warmWhite;
@@ -137,5 +155,5 @@ export function createEffects() {
     ctx.globalAlpha = 1;
   }
 
-  return { merge, impact, floatText, update, draw };
+  return { merge, impact, dissolve, floatText, update, draw };
 }

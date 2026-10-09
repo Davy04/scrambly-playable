@@ -135,5 +135,12 @@ export function createWorld() {
     return Composite.allBodies(engine.world).filter((body) => !body.isStatic);
   }
 
-  return { addBall, step, balls };
+  // Called on restart: removes the collision listener and every body, so nothing of this world stays alive.
+  function destroy() {
+    Events.off(engine);
+    Composite.clear(engine.world, false);
+    Engine.clear(engine);
+  }
+
+  return { addBall, step, balls, destroy };
 }

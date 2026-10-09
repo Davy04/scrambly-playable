@@ -1,6 +1,7 @@
 import {
   PLAY_AREA, LEVELS, MAX_DROP_LEVEL, DROP_COOLDOWN, DROP_Y,
   EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED, NERVOUS_MARGIN, MILESTONES,
+  END_DELAY,
 } from './config.js';
 
 // Picks the level of the next ball. The first EASY_DROPS balls are small, so early merges are easy.
@@ -17,6 +18,7 @@ export function createState() {
     cooldown: 0, // seconds left until a ball is in hand again
     dangerTime: 0, // seconds a ball has been resting above the danger line
     bestMergedLevel: 0, // highest level the player has created by merging
+    endTime: 0, // seconds since the game was won or lost
   };
   state.heldLevel = dealLevel(state);
   state.nextLevel = dealLevel(state);
@@ -80,6 +82,11 @@ export function isStackHigh(world) {
   return world.balls().some((ball) => isRestingAbove(ball, DANGER_Y + NERVOUS_MARGIN));
 }
 
+// The end screen waits a moment after the win or loss. Counted with game time, so it pauses with the game.
+export function isEndScreenDue(state) {
+  return state.status !== 'playing' && state.endTime >= END_DELAY;
+}
+
 // The first two balls are dealt when the game starts, so a third one means the player has dropped.
 export function hasDropped(state) {
   return state.dealt > 2;
@@ -87,7 +94,10 @@ export function hasDropped(state) {
 
 // Runs once per frame after the physics step: checks for the win and the loss.
 export function updateRules(state, world, dt) {
-  if (state.status !== 'playing') return;
+  if (state.status !== 'playing') {
+    state.endTime += dt;
+    return;
+  }
 
   const balls = world.balls();
   if (balls.some((ball) => ball.level === WIN_LEVEL)) {

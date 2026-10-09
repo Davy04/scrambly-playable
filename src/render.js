@@ -1,5 +1,6 @@
 import {
   LOGICAL_W, LOGICAL_H, MAX_DPR, COLORS, PLAY_AREA, LEVELS, DROP_Y, NEXT_PREVIEW,
+  POP_DURATION, POP_START_SCALE,
 } from './config.js';
 
 // Scales the canvas to the largest 360x640 box that fits in the available space (letterbox).
@@ -26,7 +27,7 @@ export function draw(ctx, scene) {
   drawBackground(ctx);
   drawPlayArea(ctx);
   for (const ball of scene.balls) {
-    drawBall(ctx, ball.position.x, ball.position.y, ball.level);
+    drawBall(ctx, ball.position.x, ball.position.y, ball.level, popScale(ball));
   }
   if (scene.heldLevel !== null) {
     drawAimGuide(ctx, scene.heldX);
@@ -52,11 +53,17 @@ function drawPlayArea(ctx) {
   ctx.globalAlpha = 1;
 }
 
+// Goes from POP_START_SCALE to 1 while a merged ball's pop timer runs down.
+function popScale(ball) {
+  const progressLeft = ball.popLeft / POP_DURATION;
+  return 1 - (1 - POP_START_SCALE) * progressLeft;
+}
+
 // Placeholder look: a flat circle in the level color. The real ball art comes in T5.
-function drawBall(ctx, x, y, level) {
+function drawBall(ctx, x, y, level, scale = 1) {
   const { radius, color } = LEVELS[level - 1];
   ctx.beginPath();
-  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.arc(x, y, radius * scale, 0, Math.PI * 2);
   ctx.fillStyle = color;
   ctx.fill();
   ctx.lineWidth = 2;

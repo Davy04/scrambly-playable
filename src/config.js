@@ -41,6 +41,11 @@ export const PHYSICS = {
 // The simulation always advances in steps of this size, whatever the screen refresh rate.
 export const FIXED_STEP = 1 / 60;
 
+// Merge "pop": a new merged ball is drawn growing from POP_START_SCALE to full size.
+// Visual only: the physics radius is full size from the start.
+export const POP_DURATION = 0.2; // seconds
+export const POP_START_SCALE = 0.6;
+
 // Dropping
 export const MAX_DROP_LEVEL = 3; // drops are random between level 1 and this one
 export const DROP_COOLDOWN = 0.5; // seconds without a ball in hand after a drop

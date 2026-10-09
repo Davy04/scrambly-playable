@@ -11,16 +11,20 @@ The merge chain mirrors the Scrambly product flow. Every item is naturally round
 
 | Level | Item | Look | Radius (px) | Stage |
 |-------|------|------|-------------|-------|
-| 1 | Ping-pong ball | Plain orange or white | 16 | Discover |
-| 2 | Billiard ball | Purple with a white circle | 22 | Discover (milestone 1) |
-| 3 | Tennis ball | Lime green with white curves | 29 | Play |
-| 4 | Basketball | Orange with dark lines | 37 | Play (milestone 2) |
-| 5 | Arcade token | Purple `#7845D8` with a star | 46 | Redeem |
-| 6 | Scrambly-style coin | Gold-orange, shiny, own drawing | 56 | Redeem (milestone 3) |
+| 1 | Ping-pong ball | Plain light orange | 17 | Discover |
+| 2 | Golf ball | White with dimples | 23 | Discover |
+| 3 | Billiard ball | Purple with a white circle | 29 | Discover (milestone 1) |
+| 4 | Tennis ball | Lime green with white curves | 36 | Play |
+| 5 | Bowling ball | Dark blue with three holes | 43 | Play |
+| 6 | Basketball | Orange with dark lines | 51 | Play (milestone 2) |
+| 7 | Arcade token | Purple `#7845D8` with a star | 60 | Redeem |
+| 8 | Scrambly-style coin | Gold-orange, shiny, own drawing | 70 | Redeem (milestone 3) |
 
-Radii are for a ~300 px wide play area. Tune them while playing.
+Radii are for a 300 px wide play area. Only levels 1-4 are dropped (half the chain, like Suika).
 
-- A top bar shows 3 milestones: **Discover → Play → Redeem** (reached at levels 2, 4, 6).
+Balance change after T4: the first version (6 levels, drops 1-3) was won in about 20 s by tapping fast. The chain went to 8 levels with larger balls so the box fills up and the player has to choose where to drop. Radii and the drop range were picked with a headless simulation of two simple players (random taps vs aiming at a matching ball).
+
+- A top bar shows 3 milestones: **Discover → Play → Redeem** (reached at levels 3, 6, 8).
 - A **demo balance** rises at each milestone. It is always labeled "demo" and never shown as real money.
 - The **fox** from the kit is the mascot above the play area. It is a single static image, so all reactions are done in code (jump, squash/stretch, shake).
 - Ending: after reaching the last milestone, a "You redeemed!" screen with the CTA **"Explore Scrambly"**.
@@ -61,7 +65,7 @@ Everything is drawn in Canvas 2D, no external art except the fox.
 - Art: soft toy look, generic sports/arcade balls, no real brand logos or league marks.
 - Palette: orange `#F58324`, purple `#7845D8`, deep ink `#201338`, warm white `#FFF6E8`.
 - Target play time: 60-90 seconds.
-- Chain length: 6 levels.
+- Chain length: 8 levels.
 - Desktop: the game is mobile-only. On a wide window it stays the same portrait game, letterboxed with a visible border around the play surface. No desktop layout.
 - Rotate prompt: only for a phone held in landscape (landscape and short height), never for a desktop window.
 - CSS lives in `src/style.css` (not inline), for easier maintenance.

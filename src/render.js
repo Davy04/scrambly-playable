@@ -114,6 +114,6 @@ function drawNextPreview(ctx, level) {
   ctx.font = '700 14px Fredoka, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = COLORS.warmWhite;
-  ctx.fillText('Next', NEXT_PREVIEW.x, NEXT_PREVIEW.y - 36);
+  ctx.fillText('Next', NEXT_PREVIEW.x, NEXT_PREVIEW.y - 46);
   drawBall(ctx, NEXT_PREVIEW.x, NEXT_PREVIEW.y, level);
 }

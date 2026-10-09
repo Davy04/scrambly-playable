@@ -88,7 +88,7 @@ BRIEF.md  IDEAS.md  NOTES.md  README.md  CLAUDE.md
 
 - Drop an item from the top at the pointer's X. Cooldown between drops. Show the next item.
 - Two items of the same level that touch merge into the next level at their midpoint. Max level does not merge.
-- 6 levels. Milestones at levels 2, 4, 6 → Discover, Play, Redeem. Demo balance rises at each milestone.
+- 8 levels; only levels 1-4 are dropped. Milestones at levels 3, 6, 8 → Discover, Play, Redeem. Demo balance rises at each milestone.
 - Danger line: an item resting above it for ~2s triggers the loss state.
 - Early drops are biased toward easy combos so the player reaches the CTA reliably.
 - Target session: 60-90 seconds.

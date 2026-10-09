@@ -2,6 +2,15 @@
 
 A portrait, mobile-first merge playable (Suika-style) for Scrambly. Take-home for Simula Ad.
 
+## How it plays
+
+- Drag to aim, release to drop a ball. Two equal balls merge into the next one; the last ball of the chain is the Scrambly coin.
+- Merging up the chain reaches the three Scrambly steps: Discover, Play, Redeem. Each step raises the demo balance and explains itself in a short banner.
+- Tap the Next bubble to swap the ball in hand with the next one.
+- Shake kicks every ball. One use at the start, one more for each step reached.
+- Merges that follow each other quickly are a combo and add a small bonus to the demo balance.
+- A ball resting above the dashed line for 2 seconds ends the game. Both endings show the CTA.
+
 ## Run
 
 Needs any static HTTP server (ES modules do not load from `file://`).
@@ -30,7 +39,7 @@ git archive --format=zip -o scrambly-playable.zip HEAD index.html src assets REA
 |---|---|---|
 | TODO | TODO | TODO |
 
-Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse and touch, rotate prompt, hidden tab and return, win, loss, CTA click, 5 restarts in a row, Network tab (local requests only), mute.
+Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse and touch, rotate prompt, hidden tab and return, win, loss, CTA click, 5 restarts in a row, Network tab (local requests only), mute, tutorial, swap, shake, 10 reloads in a row.
 
 ## Known limitations
 
@@ -40,6 +49,10 @@ Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse
 - The jar is drawn with rounded bottom corners, but the physics floor is square: a small ball in a corner can overlap the rim by a few pixels.
 - The squash on impact is visual only; the physics shapes stay perfect circles.
 - Sound: the mute choice is not saved between page loads. On an iPhone the hardware silent switch also mutes the game. If a sound file fails to load, that sound is missing and the game still works. The music is an mp3 played in a loop, so there can be a short gap each time it repeats.
+- The tutorial shows once per page load and cannot be reopened; a restart does not show it again.
+- Shake is random: it can help or make the stack worse. Balls in the air do not count as resting above the line, so a shake also delays a loss.
+- The swap button is an invisible HTML button placed over the Next bubble drawn on the canvas. Its position is written in CSS and must be changed by hand if the bubble moves.
+- With combos the demo balance can pass 999; four digits fit in the balance pill, but tightly.
 - No reduced-motion setting.
 
 ## Untested behavior
@@ -51,6 +64,7 @@ TODO: remove the lines that were tested.
 - Safe areas on a real notched phone.
 - Frame rate on low-end phones.
 - Very long sessions (several minutes without a win or a loss).
+- Session length and difficulty after the last tuning (lower friction, swap, shake): not measured over many games.
 
 ## Credits
 

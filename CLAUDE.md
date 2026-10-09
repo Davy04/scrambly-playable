@@ -30,20 +30,25 @@ A portrait, mobile-first merge playable (Suika-style) for **Scrambly**, a reward
 - Logical resolution **360×640**, scaled to fit with letterbox. Game logic and physics always use logical coordinates.
 - Palette: orange `#F58324`, purple `#7845D8`, deep ink `#201338`, warm white `#FFF6E8`.
 
-## Suggested structure
+## Structure
 
 ```
 index.html
 src/
   main.js        entry, wiring
   config.js      constants (sizes, levels, colors, timings)
-  state.js       game state machine (playing / won / lost / paused)
-  physics.js     Matter engine, bodies, collisions, merge
+  state.js       game rules and state (playing / won / lost), drops, combo, swap, shake
+  physics.js     Matter engine, bodies, collisions, merge, shake
   input.js       pointer handling
-  render.js      canvas drawing
-  ui.js          HUD, milestones, end screen, CTA, overlays
+  render.js      canvas drawing: jar, danger line, balls, next bubble
+  balls.js       ball art, drawn in code
+  background.js  gradient, glow and drifting bubbles
+  effects.js     merge effects, particles, squash, floating text (decoration only)
+  hud.js         progress track, demo balance, step banner, hint
+  ui.js          fox, in-game buttons, tutorial, end screen and CTA
+  audio.js       sound effects and music, mute, pause
   lib/matter.min.js
-assets/
+assets/          fox image, font, audio
 BRIEF.md  IDEAS.md  NOTES.md  README.md  CLAUDE.md
 ```
 

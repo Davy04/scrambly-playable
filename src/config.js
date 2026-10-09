@@ -51,3 +51,11 @@ export const MAX_DROP_LEVEL = 3; // drops are random between level 1 and this on
 export const DROP_COOLDOWN = 0.5; // seconds without a ball in hand after a drop
 export const DROP_Y = PLAY_AREA.y + 30; // height where the held ball waits
 export const NEXT_PREVIEW = { x: 300, y: 135 };
+export const EASY_DROPS = 6; // the first balls handed out are limited to...
+export const EASY_MAX_LEVEL = 2; // ...levels 1 to this one, so early pairs come quickly
+
+// End rules
+export const WIN_LEVEL = LEVELS.length; // the game is won when a ball of the last level exists
+export const DANGER_Y = PLAY_AREA.y + 70; // the stack must stay below this line
+export const DANGER_TIME = 2; // seconds a ball may rest above the line before the game is lost
+export const REST_SPEED = 1; // a ball slower than this (pixels per physics step) counts as resting

@@ -1,6 +1,6 @@
 import {
   LOGICAL_W, LOGICAL_H, MAX_DPR, COLORS, PLAY_AREA, LEVELS, DROP_Y, NEXT_PREVIEW,
-  POP_DURATION, POP_START_SCALE,
+  POP_DURATION, POP_START_SCALE, DANGER_Y,
 } from './config.js';
 
 // Scales the canvas to the largest 360x640 box that fits in the available space (letterbox).
@@ -22,10 +22,11 @@ export function fitCanvas(canvas, availableW, availableH) {
 }
 
 // `scene` is plain data built by main.js:
-// { balls, heldLevel (null during the cooldown), heldX, nextLevel }
+// { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, status, dangerProgress (0 to 1) }
 export function draw(ctx, scene) {
   drawBackground(ctx);
   drawPlayArea(ctx);
+  drawDangerLine(ctx, scene.dangerProgress);
   for (const ball of scene.balls) {
     drawBall(ctx, ball.position.x, ball.position.y, ball.level, popScale(ball));
   }
@@ -34,6 +35,30 @@ export function draw(ctx, scene) {
     drawBall(ctx, scene.heldX, DROP_Y, scene.heldLevel);
   }
   drawNextPreview(ctx, scene.nextLevel);
+  drawEndMessage(ctx, scene.status);
+}
+
+// Dashed orange line. It gets thicker and more solid as the loss timer fills up.
+function drawDangerLine(ctx, progress) {
+  ctx.save();
+  ctx.globalAlpha = 0.5 + 0.5 * progress;
+  ctx.strokeStyle = COLORS.orange;
+  ctx.lineWidth = 2 + 2 * progress;
+  ctx.setLineDash([10, 8]);
+  ctx.beginPath();
+  ctx.moveTo(PLAY_AREA.x, DANGER_Y);
+  ctx.lineTo(PLAY_AREA.x + PLAY_AREA.w, DANGER_Y);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// T4 placeholder. The real end screen with the CTA and restart comes in T6.
+function drawEndMessage(ctx, status) {
+  if (status === 'playing') return;
+  ctx.font = '700 32px Fredoka, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = COLORS.warmWhite;
+  ctx.fillText(status === 'won' ? 'You redeemed!' : 'Try again', LOGICAL_W / 2, 60);
 }
 
 function drawBackground(ctx) {

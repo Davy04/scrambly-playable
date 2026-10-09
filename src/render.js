@@ -1,9 +1,8 @@
 import {
   LOGICAL_W, LOGICAL_H, MAX_DPR, COLORS, PLAY_AREA, DROP_Y, NEXT_PREVIEW,
-  POP_DURATION, POP_START_SCALE, DANGER_Y,
+  POP_DURATION, POP_START_SCALE, DANGER_Y, FOX,
 } from './config.js';
 import { drawBall } from './balls.js';
-import { drawTopBar, drawHint } from './ui.js';
 
 export function fitCanvas(frame, canvas, availableW, availableH) {
   if (availableW <= 0 || availableH <= 0) return;
@@ -25,13 +24,14 @@ export function fitCanvas(frame, canvas, availableW, availableH) {
 
 // `scene` is plain data built by main.js:
 // { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, dangerProgress (0 to 1),
-//   milestonesReached, balance, showHint, fox, effects }
+//   showHint, fox, effects, background, hud }
 export function draw(ctx, scene) {
-  drawBackground(ctx);
-  drawPlayArea(ctx);
+  scene.background.draw(ctx);
+  drawJar(ctx);
   drawDangerLine(ctx, scene.dangerProgress);
+  drawFoxLedge(ctx);
   scene.fox.draw(ctx);
-  if (scene.showHint) drawHint(ctx);
+  if (scene.showHint) scene.hud.drawHint(ctx);
   for (const ball of scene.balls) {
     drawBall(ctx, ball.position.x, ball.position.y, ball.level, {
       scale: popScale(ball),
@@ -46,41 +46,90 @@ export function draw(ctx, scene) {
   }
   scene.effects.draw(ctx);
   drawNextPreview(ctx, scene.nextLevel);
-  drawTopBar(ctx, scene.milestonesReached, scene.balance);
+  scene.hud.draw(ctx);
 }
 
+const RIM = 6; // logical pixels
+
 function drawDangerLine(ctx, progress) {
+  const { x, y, w } = PLAY_AREA;
+  const filled = Math.min(progress, 1);
+  const inDanger = filled > 0;
+  // The pulse is driven by the loss timer itself, so it pauses with the game.
+  const pulse = 0.75 + 0.25 * Math.sin(filled * Math.PI * 12);
+
   ctx.save();
-  ctx.globalAlpha = 0.5 + 0.5 * progress;
-  ctx.strokeStyle = COLORS.orange;
-  ctx.lineWidth = 2 + 2 * progress;
+  if (inDanger) {
+    ctx.globalAlpha = (0.1 + 0.25 * filled) * pulse;
+    ctx.fillStyle = COLORS.danger;
+    ctx.fillRect(x, y, w, DANGER_Y - y);
+  }
+  ctx.globalAlpha = inDanger ? pulse : 0.45;
+  ctx.strokeStyle = inDanger ? COLORS.danger : COLORS.orange;
+  ctx.lineWidth = 2 + 2 * filled;
   ctx.setLineDash([10, 8]);
   ctx.beginPath();
-  ctx.moveTo(PLAY_AREA.x, DANGER_Y);
-  ctx.lineTo(PLAY_AREA.x + PLAY_AREA.w, DANGER_Y);
+  ctx.moveTo(x, DANGER_Y);
+  ctx.lineTo(x + w, DANGER_Y);
   ctx.stroke();
   ctx.restore();
 }
 
-function drawBackground(ctx) {
-  const gradient = ctx.createLinearGradient(0, 0, 0, LOGICAL_H);
-  gradient.addColorStop(0, COLORS.ink);
-  gradient.addColorStop(1, COLORS.purple);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+// A U shape: left wall, floor and right wall. The top stays open, like the physics walls.
+function jarPath(ctx, grow) {
+  const { x, y, w, h, radius } = PLAY_AREA;
+  const left = x - grow;
+  const right = x + w + grow;
+  const bottom = y + h + grow;
+  ctx.beginPath();
+  ctx.moveTo(left, y);
+  ctx.arcTo(left, bottom, right, bottom, radius + grow);
+  ctx.arcTo(right, bottom, right, y, radius + grow);
+  ctx.lineTo(right, y);
 }
 
-function drawPlayArea(ctx) {
-  ctx.globalAlpha = 0.18;
-  ctx.fillStyle = COLORS.warmWhite;
-  ctx.beginPath();
-  ctx.roundRect(PLAY_AREA.x, PLAY_AREA.y, PLAY_AREA.w, PLAY_AREA.h, PLAY_AREA.radius);
+function drawJar(ctx) {
+  const { x, y, h } = PLAY_AREA;
+
+  const glass = ctx.createLinearGradient(0, y, 0, y + h);
+  glass.addColorStop(0, 'rgba(32, 19, 56, 0.3)');
+  glass.addColorStop(1, 'rgba(32, 19, 56, 0.6)');
+  jarPath(ctx, 0);
+  ctx.fillStyle = glass;
   ctx.fill();
-  ctx.globalAlpha = 0.35;
-  ctx.lineWidth = 1.5;
-  ctx.strokeStyle = COLORS.warmWhite;
+
+  // The rim is drawn outside the physics walls, so balls never overlap it.
+  ctx.save();
+  jarPath(ctx, RIM / 2);
+  ctx.lineCap = 'round';
+  ctx.lineWidth = RIM;
+  ctx.strokeStyle = COLORS.rim;
   ctx.stroke();
-  ctx.globalAlpha = 1;
+  ctx.lineWidth = 1.5;
+  ctx.strokeStyle = 'rgba(255, 246, 232, 0.7)';
+  ctx.stroke();
+  ctx.restore();
+
+  // A faint reflection down the left side of the glass.
+  ctx.fillStyle = 'rgba(255, 246, 232, 0.1)';
+  ctx.beginPath();
+  ctx.roundRect(x + 9, y + 46, 5, 110, 2.5);
+  ctx.fill();
+}
+
+// The shelf the fox stands on. It does not move when the fox hops.
+function drawFoxLedge(ctx) {
+  const width = 92;
+  const x = FOX.centerX - width / 2;
+  const y = FOX.bottomY - 2;
+  ctx.fillStyle = '#B85A0E';
+  ctx.beginPath();
+  ctx.roundRect(x, y + 3, width, 9, 4.5);
+  ctx.fill();
+  ctx.fillStyle = COLORS.orange;
+  ctx.beginPath();
+  ctx.roundRect(x, y, width, 9, 4.5);
+  ctx.fill();
 }
 
 function popScale(ball) {
@@ -103,9 +152,18 @@ function drawAimGuide(ctx, x) {
 }
 
 function drawNextPreview(ctx, level) {
-  ctx.font = '700 14px Fredoka, sans-serif';
+  const { x, y, radius } = NEXT_PREVIEW;
+  ctx.beginPath();
+  ctx.arc(x, y, radius, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(32, 19, 56, 0.5)';
+  ctx.fill();
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = COLORS.rim;
+  ctx.stroke();
+
+  ctx.font = '700 13px Fredoka, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = COLORS.warmWhite;
-  ctx.fillText('Next', NEXT_PREVIEW.x, NEXT_PREVIEW.y - 46);
-  drawBall(ctx, NEXT_PREVIEW.x, NEXT_PREVIEW.y, level);
+  ctx.fillText('Next', x, y - radius - 6);
+  drawBall(ctx, x, y, level);
 }

@@ -1,9 +1,10 @@
-import { MAX_DT, DANGER_TIME, MILESTONES, FOX, ROTATE_QUERY } from './config.js';
+import { MAX_DT, DANGER_TIME, DANGER_GRACE, MILESTONES, FOX, ROTATE_QUERY } from './config.js';
 import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
 import { createEffects } from './effects.js';
-import { createFox, createEndScreen } from './ui.js';
+import { createBackground } from './background.js';
+import { createFox, createHud, createEndScreen } from './ui.js';
 import {
   createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
   isStackHigh, hasDropped, isEndScreenDue,
@@ -24,6 +25,8 @@ const stageObserver = new ResizeObserver(([entry]) => {
 });
 stageObserver.observe(stage);
 
+const background = createBackground();
+
 const foxImage = new Image();
 foxImage.src = 'assets/scrambly-fox-reference.webp';
 
@@ -31,12 +34,14 @@ let world;
 let state;
 let effects;
 let fox;
+let hud;
 
 function startGame() {
   world = createWorld();
   state = createState();
   effects = createEffects();
   fox = createFox(foxImage);
+  hud = createHud();
 }
 
 // Restart. The game loop, the listeners and the resize observer are created once at page load and are
@@ -121,6 +126,8 @@ function tick(now) {
   for (const impact of impacts) effects.impact(impact);
   updateRules(state, world, dt);
   effects.update(dt);
+  background.update(dt);
+  hud.update(dt, milestonesReached(state), demoBalance(state));
   fox.update(dt, state.status === 'playing' && isStackHigh(world));
   if (isEndScreenDue(state)) endScreen.show(state.status, demoBalance(state));
 
@@ -129,12 +136,12 @@ function tick(now) {
     heldLevel: isHolding(state) ? state.heldLevel : null,
     heldX: aimX(state, pointer.x),
     nextLevel: state.nextLevel,
-    dangerProgress: state.dangerTime / DANGER_TIME,
-    milestonesReached: milestonesReached(state),
-    balance: demoBalance(state),
+    dangerProgress: Math.max(0, state.dangerTime - DANGER_GRACE) / (DANGER_TIME - DANGER_GRACE),
     showHint: !hasDropped(state),
     fox,
     effects,
+    background,
+    hud,
   });
   requestAnimationFrame(tick);
 }

@@ -16,7 +16,8 @@ function createWalls() {
   const extraHeight = 400; // side walls continue above the play area so a ball cannot escape sideways
   const sideHeight = h + extraHeight;
   const sideCenterY = y + h - sideHeight / 2;
-  const options = { isStatic: true };
+  // Matter uses the larger frictionStatic of two touching bodies, so the walls need it too.
+  const options = { isStatic: true, frictionStatic: PHYSICS.frictionStatic };
 
   return [
     Bodies.rectangle(x - t / 2, sideCenterY, t, sideHeight, options),
@@ -60,6 +61,7 @@ export function createWorld() {
     const ball = Bodies.circle(x, y, LEVELS[level - 1].radius, {
       restitution: PHYSICS.restitution,
       friction: PHYSICS.friction,
+      frictionStatic: PHYSICS.frictionStatic,
     });
     ball.level = level;
     ball.merged = false;

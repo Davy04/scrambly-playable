@@ -75,6 +75,15 @@ function drawShading(ctx) {
   ctx.beginPath();
   ctx.ellipse(-0.42, -0.5, 0.26, 0.14, -0.6, 0, Math.PI * 2);
   ctx.fill();
+  fillCircle(ctx, -0.66, -0.2, 0.06, 'rgba(255, 255, 255, 0.55)');
+
+  // Light bouncing back from the floor, on the edge opposite the shine.
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 0.07;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.arc(0, 0, 0.84, Math.PI * 0.12, Math.PI * 0.42);
+  ctx.stroke();
 }
 
 function fillCircle(ctx, x, y, radius, color) {
@@ -167,7 +176,7 @@ function drawBasketballLines(ctx) {
 }
 
 function drawTokenStar(ctx) {
-  fillCircle(ctx, 0, 0, 0.78, '#B896F7');
+  fillCircle(ctx, 0, 0, 0.78, '#FF8FC2');
   ctx.strokeStyle = WHITE;
   ctx.lineWidth = 0.06;
   ctx.beginPath();

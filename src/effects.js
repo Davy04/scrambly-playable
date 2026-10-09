@@ -25,6 +25,7 @@ export function createEffects() {
     }
     rings.push({ x, y, radius: LEVELS[level - 1].radius * (1 + 0.1 * chain), life: MERGE_FX.ringLife });
     burst(x, y, level, 4 + chain * 2);
+    if (level === LEVELS.length) confetti(x, y);
     impact({ ball, speed: Infinity, angle: Math.PI / 2 });
     return chain;
   }
@@ -54,19 +55,25 @@ export function createEffects() {
     squashedBalls.add(ball);
   }
 
-  function burst(x, y, level, count) {
+  // The last ball of the chain wins the game: a bigger, slower burst in four ball colors.
+  function confetti(x, y) {
+    for (const colorLevel of [3, 6, 7, 8]) burst(x, y, colorLevel, 12, 2.5);
+  }
+
+  // `power` makes the dots bigger, faster and longer-lived.
+  function burst(x, y, level, count, power = 1) {
     const { radius, color } = LEVELS[level - 1];
     for (let i = 0; i < count && particles.length < MERGE_FX.maxParticles; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const speed = 50 + Math.random() * 80;
+      const speed = (50 + Math.random() * 80) * power;
       particles.push({
         x: x + Math.cos(angle) * radius * 0.8,
         y: y + Math.sin(angle) * radius * 0.8,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed - 40,
-        size: 1.5 + Math.random() * 2,
+        size: (1.5 + Math.random() * 2) * power,
         color: i % 2 === 0 ? color : COLORS.orange,
-        life: MERGE_FX.particleLife,
+        life: MERGE_FX.particleLife * power,
       });
     }
   }
@@ -127,7 +134,7 @@ export function createEffects() {
     }
 
     for (const particle of particles) {
-      ctx.globalAlpha = particle.life / MERGE_FX.particleLife;
+      ctx.globalAlpha = Math.min(1, particle.life / MERGE_FX.particleLife);
       ctx.fillStyle = particle.color;
       ctx.beginPath();
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);

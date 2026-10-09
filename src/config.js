@@ -12,6 +12,8 @@ export const COLORS = {
   purple: '#7845D8',
   ink: '#201338',
   warmWhite: '#FFF6E8',
+  danger: '#FF4D5E',
+  rim: '#A77BF0',
 };
 
 export const PLAY_AREA = { x: 30, y: 180, w: 300, h: 410, radius: 18 };
@@ -19,19 +21,20 @@ export const PLAY_AREA = { x: 30, y: 180, w: 300, h: 410, radius: 18 };
 // The merge chain, ordered like the real balls by size. A ball's `level` is 1-8, so its entry is LEVELS[level - 1].
 export const LEVELS = [
   { name: 'Golf ball', radius: 17, color: '#FFF6E8' },
-  { name: 'Billiard ball', radius: 23, color: '#7845D8' },
+  { name: 'Billiard ball', radius: 23, color: '#E8394A' },
   { name: 'Tennis ball', radius: 29, color: '#C6E84A' },
-  { name: 'Bowling ball', radius: 36, color: '#3B4A8C' },
+  { name: 'Bowling ball', radius: 36, color: '#35A7FF' },
   { name: 'Soccer ball', radius: 43, color: '#F7F4FF' },
   { name: 'Basketball', radius: 51, color: '#F58324' },
-  { name: 'Arcade token', radius: 60, color: '#A77BF0' },
+  { name: 'Arcade token', radius: 60, color: '#FF5FA8' },
   { name: 'Scrambly coin', radius: 70, color: '#FFC233' },
 ];
 
 export const PHYSICS = {
   gravity: 1,
   restitution: 0.2, // bounce: 0 = none, 1 = full
-  friction: 0.1,
+  friction: 0.02, // low, so balls slide past each other and settle into gaps
+  frictionStatic: 0, // Matter's default (0.5) makes resting balls stick together
   wallThickness: 50, // thick walls so a fast small ball cannot pass through
 };
 
@@ -55,9 +58,9 @@ export const MERGE_FX = {
 
 // Visual only: the physics shapes stay perfect circles.
 export const SQUASH = {
-  minImpact: 2.5, // closing speed (pixels per physics step) below which nothing happens, so resting stacks stay still
-  perSpeed: 0.01,
-  max: 0.08,
+  minImpact: 1.8, // closing speed (pixels per physics step) below which nothing happens, so resting stacks stay still
+  perSpeed: 0.016,
+  max: 0.13,
   duration: 0.16,
   heavyFactor: 0.07,
 };
@@ -65,7 +68,7 @@ export const SQUASH = {
 export const MAX_DROP_LEVEL = 4;
 export const DROP_COOLDOWN = 0.5; // seconds without a ball in hand after a drop
 export const DROP_Y = PLAY_AREA.y + 30;
-export const NEXT_PREVIEW = { x: 300, y: 135 };
+export const NEXT_PREVIEW = { x: 300, y: 135, radius: 40 }; // the bubble fits the largest ball that can be dropped
 export const EASY_DROPS = 6;
 export const EASY_MAX_LEVEL = 2;
 
@@ -88,6 +91,7 @@ export const FOX = {
 export const WIN_LEVEL = LEVELS.length;
 export const DANGER_Y = PLAY_AREA.y + 70;
 export const DANGER_TIME = 2; // seconds a ball may rest above the line before the game is lost
+export const DANGER_GRACE = 0.3; // seconds before the line turns red: a ball that was just dropped is slow and high for a moment
 export const REST_SPEED = 1; // a ball slower than this (pixels per physics step) counts as resting
 export const ROTATE_QUERY = '(orientation: landscape) and (max-height: 500px)';
 export const END_DELAY = 0.8; // seconds between the end of the game and the end screen, so the last merge is seen

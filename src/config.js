@@ -21,13 +21,13 @@ export const PLAY_AREA = { x: 30, y: 180, w: 300, h: 410, radius: 18 };
 
 // The merge chain, ordered like the real balls by size. A ball's `level` is 1-8, so its entry is LEVELS[level - 1].
 // Radii are large on purpose: the box fills up, so the player has to think about where to drop.
-// Colors are placeholders until the real ball art in T5.
+// `color` is the base color; the details of each ball are drawn in balls.js.
 export const LEVELS = [
-  { name: 'Ping-pong ball', radius: 17, color: '#FFB066' },
-  { name: 'Golf ball', radius: 23, color: '#FFF6E8' },
-  { name: 'Billiard ball', radius: 29, color: '#7845D8' },
-  { name: 'Tennis ball', radius: 36, color: '#C6E84A' },
-  { name: 'Bowling ball', radius: 43, color: '#3B4A8C' },
+  { name: 'Golf ball', radius: 17, color: '#FFF6E8' },
+  { name: 'Billiard ball', radius: 23, color: '#7845D8' },
+  { name: 'Tennis ball', radius: 29, color: '#C6E84A' },
+  { name: 'Bowling ball', radius: 36, color: '#3B4A8C' },
+  { name: 'Soccer ball', radius: 43, color: '#F7F4FF' },
   { name: 'Basketball', radius: 51, color: '#F58324' },
   { name: 'Arcade token', radius: 60, color: '#A77BF0' },
   { name: 'Scrambly coin', radius: 70, color: '#FFC233' },
@@ -56,6 +56,13 @@ export const DROP_Y = PLAY_AREA.y + 30; // height where the held ball waits
 export const NEXT_PREVIEW = { x: 300, y: 135 };
 export const EASY_DROPS = 6; // the first balls handed out are limited to...
 export const EASY_MAX_LEVEL = 2; // ...levels 1 to this one, so early pairs come quickly
+
+// The three Scrambly steps. Each is reached by merging up to `level`. `balance` is the demo balance shown from then on.
+export const MILESTONES = [
+  { level: 3, label: 'Discover', balance: 100 },
+  { level: 6, label: 'Play', balance: 250 },
+  { level: 8, label: 'Redeem', balance: 500 },
+];
 
 // End rules
 export const WIN_LEVEL = LEVELS.length; // the game is won when a ball of the last level exists

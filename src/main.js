@@ -2,7 +2,9 @@ import { MAX_DT, DANGER_TIME } from './config.js';
 import { fitCanvas, draw } from './render.js';
 import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
-import { createState, updateDrop, updateRules, isHolding, aimX } from './state.js';
+import {
+  createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
+} from './state.js';
 
 const stage = document.getElementById('stage');
 const canvas = document.getElementById('game');
@@ -30,7 +32,7 @@ function frame(now) {
   lastTime = now;
 
   updateDrop(state, pointer, world, dt);
-  world.step(dt);
+  recordMerges(state, world.step(dt));
   updateRules(state, world, dt);
 
   draw(ctx, {
@@ -40,8 +42,13 @@ function frame(now) {
     nextLevel: state.nextLevel,
     status: state.status,
     dangerProgress: state.dangerTime / DANGER_TIME,
+    milestonesReached: milestonesReached(state),
+    balance: demoBalance(state),
   });
   requestAnimationFrame(frame);
 }
 
+// Wait for the font so the first frame does not draw text in a fallback font. The game starts even if it fails.
+await document.fonts.load('600 14px Fredoka').catch(() => {});
+lastTime = performance.now();
 requestAnimationFrame(frame);

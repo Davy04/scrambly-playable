@@ -11,11 +11,11 @@ The merge chain mirrors the Scrambly product flow. Every item is naturally round
 
 | Level | Item | Look | Radius (px) | Stage |
 |-------|------|------|-------------|-------|
-| 1 | Ping-pong ball | Plain light orange | 17 | Discover |
-| 2 | Golf ball | White with dimples | 23 | Discover |
-| 3 | Billiard ball | Purple with a white circle | 29 | Discover (milestone 1) |
-| 4 | Tennis ball | Lime green with white curves | 36 | Play |
-| 5 | Bowling ball | Dark blue with three holes | 43 | Play |
+| 1 | Golf ball | White with dimples | 17 | Discover |
+| 2 | Billiard ball | Purple with a white circle | 23 | Discover |
+| 3 | Tennis ball | Lime green with white curves | 29 | Discover (milestone 1) |
+| 4 | Bowling ball | Dark blue with three holes | 36 | Play |
+| 5 | Soccer ball | White with dark pentagons | 43 | Play |
 | 6 | Basketball | Orange with dark lines | 51 | Play (milestone 2) |
 | 7 | Arcade token | Purple `#7845D8` with a star | 60 | Redeem |
 | 8 | Scrambly-style coin | Gold-orange, shiny, own drawing | 70 | Redeem (milestone 3) |

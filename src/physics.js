@@ -71,15 +71,19 @@ export function createWorld() {
     const y = Math.min(midY, PLAY_AREA.y + PLAY_AREA.h - radius);
 
     addBall(level, x, y).popLeft = POP_DURATION;
+    return { x, y, level };
   }
 
+  // Returns what was merged, as a list of { x, y, level } for the new balls.
   function resolveMerges() {
+    const merges = [];
     for (const [ballA, ballB] of touchingPairs) {
       // A ball touching two partners in the same step merges only once.
       if (ballA.merged || ballB.merged) continue;
-      mergePair(ballA, ballB);
+      merges.push(mergePair(ballA, ballB));
     }
     touchingPairs.length = 0;
+    return merges;
   }
 
   function updatePopTimers() {
@@ -90,14 +94,17 @@ export function createWorld() {
 
   // Advances the simulation in fixed steps. Time that does not fill a whole step is kept for the next frame.
   // dt is already clamped by the game loop (MAX_DT), so this loop runs a few times at most.
+  // Returns every merge that happened during this call.
   function step(dt) {
+    const merges = [];
     unsimulatedTime += dt;
     while (unsimulatedTime >= FIXED_STEP) {
       Engine.update(engine, FIXED_STEP * 1000); // Matter wants milliseconds
-      resolveMerges();
+      merges.push(...resolveMerges());
       updatePopTimers();
       unsimulatedTime -= FIXED_STEP;
     }
+    return merges;
   }
 
   function balls() {

@@ -1,7 +1,9 @@
 import {
-  LOGICAL_W, LOGICAL_H, MAX_DPR, COLORS, PLAY_AREA, LEVELS, DROP_Y, NEXT_PREVIEW,
+  LOGICAL_W, LOGICAL_H, MAX_DPR, COLORS, PLAY_AREA, DROP_Y, NEXT_PREVIEW,
   POP_DURATION, POP_START_SCALE, DANGER_Y,
 } from './config.js';
+import { drawBall } from './balls.js';
+import { drawTopBar } from './ui.js';
 
 // Scales the canvas to the largest 360x640 box that fits in the available space (letterbox).
 // After this, every draw call uses logical pixels.
@@ -22,19 +24,21 @@ export function fitCanvas(canvas, availableW, availableH) {
 }
 
 // `scene` is plain data built by main.js:
-// { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, status, dangerProgress (0 to 1) }
+// { balls, heldLevel (null when no ball is in hand), heldX, nextLevel, status, dangerProgress (0 to 1),
+//   milestonesReached, balance }
 export function draw(ctx, scene) {
   drawBackground(ctx);
   drawPlayArea(ctx);
   drawDangerLine(ctx, scene.dangerProgress);
   for (const ball of scene.balls) {
-    drawBall(ctx, ball.position.x, ball.position.y, ball.level, popScale(ball));
+    drawBall(ctx, ball.position.x, ball.position.y, ball.level, popScale(ball), ball.angle);
   }
   if (scene.heldLevel !== null) {
     drawAimGuide(ctx, scene.heldX);
     drawBall(ctx, scene.heldX, DROP_Y, scene.heldLevel);
   }
   drawNextPreview(ctx, scene.nextLevel);
+  drawTopBar(ctx, scene.milestonesReached, scene.balance);
   drawEndMessage(ctx, scene.status);
 }
 
@@ -58,7 +62,7 @@ function drawEndMessage(ctx, status) {
   ctx.font = '700 32px Fredoka, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillStyle = COLORS.warmWhite;
-  ctx.fillText(status === 'won' ? 'You redeemed!' : 'Try again', LOGICAL_W / 2, 60);
+  ctx.fillText(status === 'won' ? 'You redeemed!' : 'Try again', LOGICAL_W / 2, PLAY_AREA.y + 120);
 }
 
 function drawBackground(ctx) {
@@ -82,18 +86,6 @@ function drawPlayArea(ctx) {
 function popScale(ball) {
   const progressLeft = ball.popLeft / POP_DURATION;
   return 1 - (1 - POP_START_SCALE) * progressLeft;
-}
-
-// Placeholder look: a flat circle in the level color. The real ball art comes in T5.
-function drawBall(ctx, x, y, level, scale = 1) {
-  const { radius, color } = LEVELS[level - 1];
-  ctx.beginPath();
-  ctx.arc(x, y, radius * scale, 0, Math.PI * 2);
-  ctx.fillStyle = color;
-  ctx.fill();
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = COLORS.ink;
-  ctx.stroke();
 }
 
 // Dashed vertical line showing where the held ball will fall.

@@ -1,6 +1,6 @@
 import {
   PLAY_AREA, LEVELS, MAX_DROP_LEVEL, DROP_COOLDOWN, DROP_Y,
-  EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED,
+  EASY_DROPS, EASY_MAX_LEVEL, WIN_LEVEL, DANGER_Y, DANGER_TIME, REST_SPEED, MILESTONES,
 } from './config.js';
 
 // Picks the level of the next ball. The first EASY_DROPS balls are small, so early merges are easy.
@@ -16,6 +16,7 @@ export function createState() {
     dealt: 0, // how many balls have been handed out so far
     cooldown: 0, // seconds left until a ball is in hand again
     dangerTime: 0, // seconds a ball has been resting above the danger line
+    bestMergedLevel: 0, // highest level the player has created by merging
   };
   state.heldLevel = dealLevel(state);
   state.nextLevel = dealLevel(state);
@@ -50,6 +51,22 @@ export function updateDrop(state, pointer, world, dt) {
   state.heldLevel = state.nextLevel;
   state.nextLevel = dealLevel(state);
   state.cooldown = DROP_COOLDOWN;
+}
+
+// Milestones count merged balls only: dropping a level 3 ball does not reach "Discover".
+export function recordMerges(state, merges) {
+  for (const merge of merges) {
+    state.bestMergedLevel = Math.max(state.bestMergedLevel, merge.level);
+  }
+}
+
+export function milestonesReached(state) {
+  return MILESTONES.filter((milestone) => state.bestMergedLevel >= milestone.level).length;
+}
+
+export function demoBalance(state) {
+  const reached = milestonesReached(state);
+  return reached === 0 ? 0 : MILESTONES[reached - 1].balance;
 }
 
 // A falling ball also passes above the line, so only slow balls count.

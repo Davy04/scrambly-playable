@@ -8,7 +8,12 @@
 
 ## What I contributed
 
-TODO
+- **Concept and advertiser link.** I chose a familiar merge mechanic and mapped its chain to the three Scrambly steps (Discover, Play, Redeem), with a demo balance that is always labeled as a demo. The concept, the decisions and the task plan (T0-T8) are in `IDEAS.md`.
+- **Technical decisions.** Plain JavaScript and Canvas 2D with no build step, Matter.js vendored locally, a 360x640 logical resolution, small separate files. I wrote these as fixed rules in `CLAUDE.md` before any code.
+- **How the AI was used.** One task at a time: the AI proposed a plan, I approved or changed it, it wrote the code, I reviewed the diff and played the result before each commit. Most of the code was drafted by the AI; my part was direction, review, testing and correction.
+- **Playtesting.** I found by playing the problems listed in the table below: the pointer leaving the canvas, the danger line flashing on every drop, the balance touching its label, the sticky physics, the blank screen on some reloads.
+- **Direction of the final polish.** I asked for the visual pass, chose the new mechanics (swap, shake, combo) from a longer list, asked for the tutorial, and picked the pop sound and the music.
+- **Real device test** on an iPhone.
 
 ## Decisions, corrections and rejected AI outputs
 
@@ -24,4 +29,5 @@ TODO
 | Polish: mechanics | A list of seven possible mechanics, recommending a reward ball per step plus swap | I chose swap, shake and a combo bonus instead | I wanted more to do on every drop, with rules a player understands in seconds |
 | Polish: restart safety | While adding the buttons, an edit script put the listener setup inside `reset()` | The AI caught it when re-reading its own diff and moved it back before testing | It would have added duplicate listeners on every restart, which the brief forbids |
 | Bug: game sometimes blank on reload | The AI could not reproduce it and blamed the browser cache mixing old and new files; it even added a README note | I captured the console error (`hud.js`, reading `label`). Real cause: the first frame could have a negative delta time, which made the step banner draw with no step reached. Delta time is now clamped to zero or more, and the README note was removed | A guess without a reproduction is not a diagnosis; the console error was |
+| Delivery: ZIP | The AI built the ZIP and checked it over HTTP only | I opened the extracted `index.html` with a double click and saw a broken page (ES modules do not load from `file://`). The page now shows a message asking for a static server in that case | A reviewer can make the same mistake; a clear message is better than a broken game |
 | Polish: audio | First decision (mine, in the plan): no audio, to save time | Reversed it in the final polish and supplied my own pop sample and, later, a music track. The AI added the other sounds in code, plus mute and silence while hidden. When mute seemed not to work on the music, the cause was a second copy of the game playing in the AI's hidden test tab | Sound adds a lot of feel; the brief only asks for mute and visibility handling when audio is used |

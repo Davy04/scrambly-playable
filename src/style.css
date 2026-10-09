@@ -20,6 +20,15 @@ body {
   display: none !important;
 }
 
+#needs-server {
+  margin: 0;
+  padding: 2em 1.5em;
+  color: #FFF6E8;
+  font-size: 1.1em;
+  line-height: 1.6;
+  text-align: center;
+}
+
 #stage {
   position: fixed;
   inset: 0;

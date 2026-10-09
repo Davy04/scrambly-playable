@@ -23,6 +23,8 @@ Then open `http://localhost:8000/`. To test on a phone, use the computer's LAN a
 
 No build step, no external requests, no backend.
 
+Opening `index.html` with a double click (`file://`) does not work: the page shows a short message asking for a server instead of the game.
+
 ## Build the ZIP
 
 The ZIP is made from the last commit, so commit first.
@@ -31,15 +33,16 @@ The ZIP is made from the last commit, so commit first.
 git archive --format=zip -o scrambly-playable.zip HEAD index.html src assets README.md NOTES.md
 ```
 
-`index.html` ends up at the ZIP root. The limit is 5,000,000 bytes; the build is about 2.1 MB (most of it is the music).
+`index.html` ends up at the ZIP root. The limit is 5,000,000 bytes; the build is about 2.0 MB (most of it is the music).
 
 ## Tested browsers and devices
 
 | Browser / device | Real or emulated | What was checked |
 |---|---|---|
-| TODO | TODO | TODO |
-
-Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse and touch, rotate prompt, hidden tab and return, win, loss, CTA click, 5 restarts in a row, Network tab (local requests only), mute, tutorial, swap, shake, 10 reloads in a row.
+| Chromium-based desktop browser, Windows 11, mouse | Real | Full games: tutorial, drag / release, swap, shake, combo, win, loss, CTA click (local message, console log, no navigation), 5 restarts in a row, hidden tab and return, sound effects, music and mute |
+| Same browser, DevTools device mode, 320x568 and 390x844 portrait | Emulated | Layout at both sizes, rotate prompt in landscape |
+| iPhone, Safari, touch | Real | Touch play on a real phone |
+| Claude Code built-in browser (Chromium), 320x568 and 390x844 | Emulated | The ZIP extracted to an empty folder and served over HTTP: page loads, no console errors, every request is local, layout of the HUD, tutorial and buttons. Game rules (merge, combo, swap, shake) run as a scripted simulation. No real-time play: this browser does not run animation frames |
 
 ## Known limitations
 
@@ -57,12 +60,11 @@ Checklist used: 320x568 and 390x844 portrait, drag / release / cancel with mouse
 
 ## Untested behavior
 
-TODO: remove the lines that were tested.
-
 - Android phones and Firefox.
-- Sound on a real iPhone (silent switch on and off, return from background).
-- Safe areas on a real notched phone.
+- On the iPhone: the hardware silent switch, and sound after returning from the background.
 - Frame rate on low-end phones.
+- The `file://` message (added last, after the ZIP was once opened with a double click by mistake).
+- Listener and timer counts in DevTools across restarts: restarts were checked by playing, not by counting.
 - Very long sessions (several minutes without a win or a loss).
 - Session length and difficulty after the last tuning (lower friction, swap, shake): not measured over many games.
 
@@ -71,6 +73,6 @@ TODO: remove the lines that were tested.
 - **Fox artwork** — `assets/scrambly-fox-reference.webp`, supplied in the Scrambly assessment kit (Simula advertiser materials).
 - **Matter.js 0.20.0** — physics engine by Liam Brummitt, MIT License. Vendored in `src/lib/matter.min.js`. https://brm.io/matter-js/
 - **Fredoka** — font by The Fredoka Project Authors, SIL Open Font License 1.1. Latin subset in `assets/fonts/Fredoka-latin.woff2`, license in `assets/fonts/OFL.txt`.
-- **Merge pop sound** — `assets/audio/bubble-pop.mp3`, "Bubble Pop 06" by Universfield, from Pixabay (Pixabay Content License). TODO: confirm the title and license on the download page.
-- **Background music** — `assets/audio/music-loop.mp3`, "Happy Ukulele" by Waveloom, from Pixabay (Pixabay Content License). TODO: confirm the title and license on the download page.
+- **Merge pop sound** — `assets/audio/bubble-pop.mp3`, "Bubble Pop 06" by Universfield, from Pixabay (Pixabay Content License). https://pixabay.com/sound-effects/bubble-pop-06-351337/
+- **Background music** — `assets/audio/music-loop.mp3`, "Happy Ukulele" (0:59) by Waveloom, from Pixabay (Pixabay Content License). https://pixabay.com/users/waveloom-50821923/
 - All other art is drawn in code (Canvas 2D). All other sounds are synthesized in code (Web Audio API).

@@ -72,6 +72,16 @@
     <p class="fine-print">This game plays in portrait.</p>
   </div>
 
+  <!-- Browsers do not load ES modules from file://, so a double-clicked index.html would show a broken page.
+       This plain script explains what to do instead. -->
+  <p id="needs-server" hidden>This game needs a static HTTP server.<br>In this folder, run <b>python -m http.server 8000</b><br>and open <b>http://localhost:8000</b></p>
+  <script>
+    if (location.protocol === 'file:') {
+      document.getElementById('stage').hidden = true;
+      document.getElementById('needs-server').hidden = false;
+    }
+  </script>
+
   <!-- Matter.js is a UMD build, not an ES module: it loads first and exposes the global `Matter`. -->
   <script src="src/lib/matter.min.js"></script>
   <script type="module" src="src/main.js"></script>

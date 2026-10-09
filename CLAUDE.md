@@ -25,7 +25,7 @@ A portrait, mobile-first merge playable (Suika-style) for **Scrambly**, a reward
 - Plain JavaScript (ES modules) + Canvas 2D. No build step, no bundler, no framework.
 - **Matter.js** for physics, vendored in `src/lib/` (no CDN).
 - Pointer Events for input (mouse + touch).
-- **No audio.** Do not add sound or a mute control.
+- **Audio:** short sound effects only (`src/audio.js`), started after the first press, with a mute button, silenced while paused or hidden. No music.
 - Art: the fox from the Scrambly kit in `assets/`, plus simple icons drawn in code. No real brand logos.
 - Logical resolution **360×640**, scaled to fit with letterbox. Game logic and physics always use logical coordinates.
 - Palette: orange `#F58324`, purple `#7845D8`, deep ink `#201338`, warm white `#FFF6E8`.

@@ -68,17 +68,25 @@ button {
   touch-action: manipulation;
 }
 
-#restart {
+#restart,
+#mute {
   position: absolute;
-  left: 50%;
   bottom: 0.35em;
-  transform: translateX(-50%);
   height: 2.1em;
   padding: 0 1.1em;
   font-size: 0.8em;
   color: rgba(255, 246, 232, 0.85);
   background: rgba(32, 19, 56, 0.4);
   border: 0.1em solid rgba(255, 246, 232, 0.3);
+}
+
+#restart {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#mute {
+  right: 1.9em;
 }
 
 /* End screen: a dark layer with a card in the middle. The layer covers the whole game,

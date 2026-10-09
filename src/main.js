@@ -4,6 +4,7 @@ import { createPointer } from './input.js';
 import { createWorld } from './physics.js';
 import { createEffects } from './effects.js';
 import { createBackground } from './background.js';
+import { createAudio } from './audio.js';
 import { createFox, createHud, createEndScreen } from './ui.js';
 import {
   createState, updateDrop, updateRules, recordMerges, isHolding, aimX, milestonesReached, demoBalance,
@@ -26,6 +27,7 @@ const stageObserver = new ResizeObserver(([entry]) => {
 stageObserver.observe(stage);
 
 const background = createBackground();
+const audio = createAudio(listeners.signal);
 
 const foxImage = new Image();
 foxImage.src = 'assets/scrambly-fox-reference.webp';
@@ -73,11 +75,13 @@ function reactToMerges(merges) {
   let chain = 1;
   for (const merge of merges) {
     chain = effects.merge(merge);
+    audio.merge(merge.level);
   }
   if (reachedNow > reachedBefore) {
     const last = merges[merges.length - 1];
     effects.floatText(last.x, last.y - 24, `${MILESTONES[reachedNow - 1].label}!`, 26);
     fox.hop(FOX.hopBig);
+    if (reachedNow < MILESTONES.length) audio.milestone(); // the last step plays the win sound instead
   } else {
     fox.hop(FOX.hopSmall + chain * 2);
   }
@@ -91,6 +95,7 @@ let paused = false;
 function updatePause() {
   rotatePrompt.hidden = !phoneSideways.matches;
   paused = pageHidden || phoneSideways.matches;
+  audio.setPaused(paused);
   if (paused) {
     pointer.down = false;
     pointer.released = false;
@@ -120,11 +125,16 @@ function tick(now) {
     return;
   }
 
-  updateDrop(state, pointer, world, dt);
+  if (updateDrop(state, pointer, world, dt)) audio.drop();
   const { merges, impacts } = world.step(dt);
   reactToMerges(merges);
   for (const impact of impacts) effects.impact(impact);
+  const statusBefore = state.status;
   updateRules(state, world, dt);
+  if (state.status !== statusBefore) {
+    if (state.status === 'won') audio.win();
+    else audio.lose();
+  }
   effects.update(dt);
   background.update(dt);
   hud.update(dt, milestonesReached(state), demoBalance(state));

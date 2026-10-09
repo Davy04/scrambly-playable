@@ -35,6 +35,7 @@ export function aimX(state, pointerX) {
   return Math.min(Math.max(pointerX, min), max);
 }
 
+// Returns true on the frame a ball is dropped.
 export function updateDrop(state, pointer, world, dt) {
   // Read and clear the flag every frame, so a release during the cooldown is not remembered.
   const released = pointer.released;
@@ -42,14 +43,15 @@ export function updateDrop(state, pointer, world, dt) {
 
   if (!isHolding(state)) {
     state.cooldown -= dt;
-    return;
+    return false;
   }
-  if (!released) return;
+  if (!released) return false;
 
   world.addBall(state.heldLevel, aimX(state, pointer.x), DROP_Y);
   state.heldLevel = state.nextLevel;
   state.nextLevel = dealLevel(state);
   state.cooldown = DROP_COOLDOWN;
+  return true;
 }
 
 // Milestones count merged balls only: dropping a level 3 ball does not reach "Discover".

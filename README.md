@@ -35,4 +35,5 @@ TODO (T8).
 - **Fox artwork** — `assets/scrambly-fox-reference.webp`, supplied in the Scrambly assessment kit (Simula advertiser materials).
 - **Matter.js 0.20.0** — physics engine by Liam Brummitt, MIT License. Vendored in `src/lib/matter.min.js`. https://brm.io/matter-js/
 - **Fredoka** — font by The Fredoka Project Authors, SIL Open Font License 1.1. Latin subset in `assets/fonts/Fredoka-latin.woff2`, license in `assets/fonts/OFL.txt`.
-- All other art is drawn in code (Canvas 2D).
+- **Merge pop sound** — `assets/audio/bubble-pop.mp3`, "Bubble Pop 06" by Universfield, from Pixabay (Pixabay Content License). TODO: confirm the title and license on the download page.
+- All other art is drawn in code (Canvas 2D). All other sounds are synthesized in code (Web Audio API).

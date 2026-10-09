@@ -18,7 +18,6 @@ const ctx = canvas.getContext('2d');
 const listeners = new AbortController();
 const pointer = createPointer(canvas, listeners.signal);
 
-// Fires on window resize, rotation and when the mobile browser bars show or hide.
 // contentRect is the stage minus its safe-area padding.
 const stageObserver = new ResizeObserver(([entry]) => {
   fitCanvas(frame, canvas, entry.contentRect.width, entry.contentRect.height);
@@ -28,7 +27,6 @@ stageObserver.observe(stage);
 const foxImage = new Image();
 foxImage.src = 'assets/scrambly-fox-reference.webp';
 
-// Everything that belongs to one play session. reset() throws these away and builds new ones.
 let world;
 let state;
 let effects;
@@ -60,8 +58,6 @@ const endScreen = createEndScreen(listeners.signal, {
 
 startGame();
 
-// Feedback for the merges of this frame: the merge effect, a fox hop,
-// and a bigger hop with the step name when a milestone is reached.
 function reactToMerges(merges) {
   if (merges.length === 0) return;
 
@@ -78,11 +74,10 @@ function reactToMerges(merges) {
     effects.floatText(last.x, last.y - 24, `${MILESTONES[reachedNow - 1].label}!`, 26);
     fox.hop(FOX.hopBig);
   } else {
-    fox.hop(FOX.hopSmall + chain * 2); // chained merges get a slightly higher hop
+    fox.hop(FOX.hopSmall + chain * 2);
   }
 }
 
-// Pause. The game stops while the page is hidden or while a phone is held sideways.
 const rotatePrompt = document.getElementById('rotate');
 const phoneSideways = window.matchMedia(ROTATE_QUERY);
 let pageHidden = document.hidden;
@@ -92,7 +87,6 @@ function updatePause() {
   rotatePrompt.hidden = !phoneSideways.matches;
   paused = pageHidden || phoneSideways.matches;
   if (paused) {
-    // Forget any press in progress, so nothing drops by itself when the game comes back.
     pointer.down = false;
     pointer.released = false;
   }
@@ -114,7 +108,7 @@ let lastTime = performance.now();
 function tick(now) {
   // Clamped so a slow frame or a return from a hidden tab never simulates a big jump.
   const dt = Math.min((now - lastTime) / 1000, MAX_DT);
-  lastTime = now; // also updated while paused, so no paused time is ever simulated later
+  lastTime = now;
 
   if (paused) {
     requestAnimationFrame(tick);

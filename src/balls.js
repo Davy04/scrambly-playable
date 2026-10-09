@@ -1,7 +1,6 @@
 import { LEVELS } from './config.js';
 
 // Each ball is drawn inside a circle of radius 1 centered at (0, 0); drawBall scales it to the real size.
-// One detail function per level, in the same order as LEVELS.
 const DETAILS = [
   drawGolfDimples,
   drawBilliardSpot,
@@ -13,25 +12,17 @@ const DETAILS = [
   drawCoinStar,
 ];
 
-const DARK = 'rgba(32, 19, 56, 0.75)'; // deep ink, a bit see-through
+const DARK = 'rgba(32, 19, 56, 0.75)';
 const WHITE = '#FFF6E8';
-const OUTLINE_WIDTH = 2; // logical pixels, the same on every ball
+const OUTLINE_WIDTH = 2;
 
-// Returns a darker tone of a '#RRGGBB' color. factor 0 is black, 1 is the same color.
 function darken(hex, factor) {
   const channels = [1, 3, 5].map((start) => Math.round(parseInt(hex.slice(start, start + 2), 16) * factor));
   return `rgb(${channels.join(', ')})`;
 }
 
-// Each ball's outline is a darker tone of its own color: touching balls stay easy to tell apart.
 const OUTLINES = LEVELS.map((level) => darken(level.color, 0.45));
 
-// Options (all optional):
-//   scale        size multiplier, used by the merge pop
-//   angle        rotation of the detail, from the physics body
-//   squash       0 to SQUASH.max: how flattened the ball is, used after a hard hit
-//   squashAngle  direction of the flattening
-//   alpha        opacity, used when a merged ball fades out
 export function drawBall(ctx, x, y, level, { scale = 1, angle = 0, squash = 0, squashAngle = 0, alpha = 1 } = {}) {
   const { radius, color } = LEVELS[level - 1];
   const detail = DETAILS[level - 1];
@@ -40,17 +31,14 @@ export function drawBall(ctx, x, y, level, { scale = 1, angle = 0, squash = 0, s
   ctx.globalAlpha = alpha;
   ctx.translate(x, y);
   if (squash > 0) {
-    // Flatter along the hit direction and wider across it, so the ball seems to keep its volume.
     ctx.rotate(squashAngle);
     ctx.scale(1 - squash, 1 + squash);
     ctx.rotate(-squashAngle);
   }
   ctx.scale(radius * scale, radius * scale);
 
-  // Soft shadow under the ball, slightly down and to the right. It lifts the ball off its neighbors.
   fillCircle(ctx, 0.05, 0.1, 1.02, 'rgba(32, 19, 56, 0.25)');
 
-  // Base color, and a clip so details never spill outside the ball.
   ctx.beginPath();
   ctx.arc(0, 0, 1, 0, Math.PI * 2);
   ctx.fillStyle = color;
@@ -75,7 +63,6 @@ export function drawBall(ctx, x, y, level, { scale = 1, angle = 0, squash = 0, s
   ctx.restore();
 }
 
-// Soft toy look: light from the top-left, darker toward the bottom-right edge, plus a small shine.
 function drawShading(ctx) {
   const shade = ctx.createRadialGradient(-0.35, -0.4, 0.1, 0, 0, 1);
   shade.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
@@ -136,7 +123,6 @@ function drawBowlingHoles(ctx) {
   }
 }
 
-// A dark pentagon in the middle, a seam from each of its corners, and five dark patches cut by the edge.
 function drawSoccerPatches(ctx) {
   ctx.strokeStyle = DARK;
   ctx.lineWidth = 0.05;
@@ -153,7 +139,6 @@ function drawSoccerPatches(ctx) {
   }
 }
 
-// `turn` rotates the pentagon; 0 means one corner points down.
 function fillPentagon(ctx, x, y, radius, turn) {
   ctx.fillStyle = DARK;
   ctx.beginPath();
@@ -182,7 +167,7 @@ function drawBasketballLines(ctx) {
 }
 
 function drawTokenStar(ctx) {
-  fillCircle(ctx, 0, 0, 0.78, '#B896F7'); // lighter face inside the rim
+  fillCircle(ctx, 0, 0, 0.78, '#B896F7');
   ctx.strokeStyle = WHITE;
   ctx.lineWidth = 0.06;
   ctx.beginPath();
@@ -193,7 +178,7 @@ function drawTokenStar(ctx) {
 
 // Our own coin: a ring and a star. It does not copy the symbol on the coins in the fox artwork.
 function drawCoinStar(ctx) {
-  fillCircle(ctx, 0, 0, 0.76, '#FFD76A'); // lighter face inside the rim
+  fillCircle(ctx, 0, 0, 0.76, '#FFD76A');
   ctx.strokeStyle = '#F58324';
   ctx.lineWidth = 0.09;
   ctx.beginPath();

@@ -2,7 +2,6 @@ import { LOGICAL_W, LOGICAL_H } from './config.js';
 
 const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
 
-// Converts a pointer event from CSS pixels on the page to logical game pixels.
 // Clamped because pointer capture keeps sending events while the pointer is outside the canvas.
 export function toLogical(canvas, event) {
   const rect = canvas.getBoundingClientRect();
@@ -12,8 +11,6 @@ export function toLogical(canvas, event) {
   };
 }
 
-// Tracks one pointer (mouse or first finger) on the canvas.
-// Every listener uses `signal`, so aborting it removes them all at once.
 export function createPointer(canvas, signal) {
   // `released` is set by a real lift only. The game reads it and sets it back to false.
   const pointer = { x: LOGICAL_W / 2, y: LOGICAL_H / 2, down: false, released: false };
@@ -31,7 +28,6 @@ export function createPointer(canvas, signal) {
     move(event);
   }
 
-  // A real lift: the only event that asks the game to drop.
   function lift(event) {
     if (!event.isPrimary || !pointer.down) return;
     move(event);

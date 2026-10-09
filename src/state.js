@@ -4,7 +4,6 @@ import {
   END_DELAY,
 } from './config.js';
 
-// Picks the level of the next ball. The first EASY_DROPS balls are small, so early merges are easy.
 function dealLevel(state) {
   const maxLevel = state.dealt < EASY_DROPS ? EASY_MAX_LEVEL : MAX_DROP_LEVEL;
   state.dealt += 1;
@@ -14,11 +13,11 @@ function dealLevel(state) {
 export function createState() {
   const state = {
     status: 'playing', // 'playing' | 'won' | 'lost'
-    dealt: 0, // how many balls have been handed out so far
-    cooldown: 0, // seconds left until a ball is in hand again
-    dangerTime: 0, // seconds a ball has been resting above the danger line
-    bestMergedLevel: 0, // highest level the player has created by merging
-    endTime: 0, // seconds since the game was won or lost
+    dealt: 0,
+    cooldown: 0,
+    dangerTime: 0,
+    bestMergedLevel: 0,
+    endTime: 0,
   };
   state.heldLevel = dealLevel(state);
   state.nextLevel = dealLevel(state);
@@ -29,7 +28,6 @@ export function isHolding(state) {
   return state.status === 'playing' && state.cooldown <= 0;
 }
 
-// Where the held ball sits: the pointer X, kept between the walls by the ball's radius.
 export function aimX(state, pointerX) {
   const radius = LEVELS[state.heldLevel - 1].radius;
   const min = PLAY_AREA.x + radius;
@@ -37,7 +35,6 @@ export function aimX(state, pointerX) {
   return Math.min(Math.max(pointerX, min), max);
 }
 
-// Runs once per frame: counts the cooldown down and drops the held ball when the player lets go.
 export function updateDrop(state, pointer, world, dt) {
   // Read and clear the flag every frame, so a release during the cooldown is not remembered.
   const released = pointer.released;
@@ -77,7 +74,6 @@ function isRestingAbove(ball, lineY) {
   return top < lineY && ball.speed < REST_SPEED;
 }
 
-// True when the stack is close to the danger line. Used only for the fox's nervous reaction.
 export function isStackHigh(world) {
   return world.balls().some((ball) => isRestingAbove(ball, DANGER_Y + NERVOUS_MARGIN));
 }
@@ -92,7 +88,6 @@ export function hasDropped(state) {
   return state.dealt > 2;
 }
 
-// Runs once per frame after the physics step: checks for the win and the loss.
 export function updateRules(state, world, dt) {
   if (state.status !== 'playing') {
     state.endTime += dt;
@@ -105,7 +100,6 @@ export function updateRules(state, world, dt) {
     return;
   }
 
-  // The timer only grows while a ball stays up there; it restarts as soon as the line is clear.
   const inDanger = balls.some((ball) => isRestingAbove(ball, DANGER_Y));
   state.dangerTime = inDanger ? state.dangerTime + dt : 0;
   if (state.dangerTime >= DANGER_TIME) state.status = 'lost';

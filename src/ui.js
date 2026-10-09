@@ -2,7 +2,6 @@ import { LOGICAL_W, COLORS, MILESTONES, PLAY_AREA, FOX } from './config.js';
 
 const BAR = { x: 16, y: 14, gap: 8, height: 26 };
 
-// Top bar: the three Scrambly steps, lit up as they are reached, and the demo balance under them.
 export function drawTopBar(ctx, milestonesReached, balance) {
   const chipWidth = (LOGICAL_W - BAR.x * 2 - BAR.gap * (MILESTONES.length - 1)) / MILESTONES.length;
 
@@ -39,13 +38,11 @@ function drawChip(ctx, x, width, text, reached) {
   ctx.globalAlpha = 1;
 }
 
-// The mascot is one static image, so every reaction is a transform done here:
-// a slow "breathing" squash when idle, a hop on merges, a shake and a sweat drop when the stack is high.
 export function createFox(image) {
   let time = 0;
-  let hopLeft = 0; // seconds left of the current hop
+  let hopLeft = 0;
   let hopHeight = 0;
-  let stackHighFor = 0; // seconds the stack has been high without a break
+  let stackHighFor = 0;
   let nervous = false;
 
   function hop(height) {
@@ -84,7 +81,6 @@ export function createFox(image) {
   return { hop, update, draw };
 }
 
-// A small drop that slides down beside the fox's head and fades, on a loop.
 function drawSweatDrop(ctx, time) {
   const progress = (time % 0.8) / 0.8;
   ctx.globalAlpha = 1 - progress;
@@ -95,7 +91,6 @@ function drawSweatDrop(ctx, time) {
   ctx.globalAlpha = 1;
 }
 
-// Shown until the first drop.
 export function drawHint(ctx) {
   ctx.font = '600 18px Fredoka, sans-serif';
   ctx.textAlign = 'center';
@@ -110,7 +105,6 @@ const END_TEXT = {
   lost: { title: 'So close!', text: 'The stack got too high. Try again, or see how Scrambly works.' },
 };
 
-// The HTML controls: the restart button, and the end screen with the CTA.
 // Listeners are added once, with `signal`, and are never added again on restart.
 export function createEndScreen(signal, { onRestart, onCta }) {
   const panel = document.getElementById('end');
@@ -125,7 +119,7 @@ export function createEndScreen(signal, { onRestart, onCta }) {
   }, { signal });
 
   function show(status, balance) {
-    if (!panel.hidden) return; // already showing
+    if (!panel.hidden) return;
     document.getElementById('end-title').textContent = END_TEXT[status].title;
     document.getElementById('end-text').textContent = END_TEXT[status].text;
     document.getElementById('end-balance').textContent = `Demo balance: ${balance}`;

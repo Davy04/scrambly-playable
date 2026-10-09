@@ -5,8 +5,6 @@ import {
 import { drawBall } from './balls.js';
 import { drawTopBar, drawHint } from './ui.js';
 
-// Scales the frame to the largest 360x640 box that fits in the available space (letterbox).
-// The canvas fills the frame. After this, every draw call uses logical pixels.
 export function fitCanvas(frame, canvas, availableW, availableH) {
   if (availableW <= 0 || availableH <= 0) return;
 
@@ -51,7 +49,6 @@ export function draw(ctx, scene) {
   drawTopBar(ctx, scene.milestonesReached, scene.balance);
 }
 
-// Dashed orange line. It gets thicker and more solid as the loss timer fills up.
 function drawDangerLine(ctx, progress) {
   ctx.save();
   ctx.globalAlpha = 0.5 + 0.5 * progress;
@@ -79,7 +76,6 @@ function drawPlayArea(ctx) {
   ctx.beginPath();
   ctx.roundRect(PLAY_AREA.x, PLAY_AREA.y, PLAY_AREA.w, PLAY_AREA.h, PLAY_AREA.radius);
   ctx.fill();
-  // A thin edge makes the walls readable against the background.
   ctx.globalAlpha = 0.35;
   ctx.lineWidth = 1.5;
   ctx.strokeStyle = COLORS.warmWhite;
@@ -87,15 +83,12 @@ function drawPlayArea(ctx) {
   ctx.globalAlpha = 1;
 }
 
-// Scale of a merged ball while its pop timer runs down: starts at POP_START_SCALE,
-// goes about 10% past full size, then settles at 1 (the "ease out back" curve).
 function popScale(ball) {
   const back = ball.popLeft / POP_DURATION; // 1 at the start of the pop, 0 at the end
   const eased = 1 - 2.7 * back ** 3 + 1.7 * back ** 2;
   return POP_START_SCALE + (1 - POP_START_SCALE) * eased;
 }
 
-// Dashed vertical line showing where the held ball will fall.
 function drawAimGuide(ctx, x) {
   ctx.save();
   ctx.globalAlpha = 0.4;

@@ -1,23 +1,21 @@
 import { COLORS, LEVELS, SQUASH, MERGE_FX } from './config.js';
 import { drawBall } from './balls.js';
 
-const TEXT_LIFE = 0.9; // seconds
-const PARTICLE_GRAVITY = 300; // logical pixels per second squared
+const TEXT_LIFE = 0.9;
+const PARTICLE_GRAVITY = 300;
 
 // Everything here is decoration. It reads what the physics reports (merges and impacts)
 // and never changes a position, a speed or a game rule.
 export function createEffects() {
   let particles = [];
   let texts = [];
-  let ghosts = []; // pictures of balls that are gone: shrinking into a merge, or dissolving on restart
-  let rings = []; // one expanding circle per merge
-  const squashedBalls = new Set(); // balls that are currently drawn deformed
+  let ghosts = [];
+  let rings = [];
+  const squashedBalls = new Set();
 
-  // Merges that follow each other quickly form a chain, and each step looks a little stronger.
   let sinceLastMerge = Infinity;
   let chain = 0;
 
-  // Full feedback for one merge. Returns the chain step (1 for a single merge).
   function merge({ x, y, level, ball, sources }) {
     chain = sinceLastMerge < MERGE_FX.chainWindow ? Math.min(chain + 1, MERGE_FX.maxChain) : 1;
     sinceLastMerge = 0;
@@ -27,17 +25,14 @@ export function createEffects() {
     }
     rings.push({ x, y, radius: LEVELS[level - 1].radius * (1 + 0.1 * chain), life: MERGE_FX.ringLife });
     burst(x, y, level, 4 + chain * 2);
-    // The new ball appears with the strongest squash its size allows, flattened vertically.
     impact({ ball, speed: Infinity, angle: Math.PI / 2 });
     return chain;
   }
 
-  // A ball picture that moves from `from` to `to` while it shrinks and fades. It waits `delay` seconds first.
   function addGhost(from, to, level, duration, delay, angle = 0) {
     ghosts.push({ fromX: from.x, fromY: from.y, toX: to.x, toY: to.y, level, angle, duration, life: duration, delay });
   }
 
-  // Restart: the balls of the old game shrink away where they were, a few at a time, with a small puff each.
   // They are pictures only; the old physics world is already gone.
   function dissolve(oldBalls) {
     for (const ball of oldBalls) {
@@ -47,7 +42,6 @@ export function createEffects() {
     }
   }
 
-  // A hard hit reported by the physics. Bigger balls deform less, so they read as heavier.
   function impact({ ball, speed, angle }) {
     const lightness = 1 - (ball.level - 1) * SQUASH.heavyFactor;
     squash(ball, Math.min(SQUASH.max, speed * SQUASH.perSpeed) * lightness, angle);
@@ -60,7 +54,6 @@ export function createEffects() {
     squashedBalls.add(ball);
   }
 
-  // Small dots leaving the edge of the new ball, in its color and in orange.
   function burst(x, y, level, count) {
     const { radius, color } = LEVELS[level - 1];
     for (let i = 0; i < count && particles.length < MERGE_FX.maxParticles; i++) {
@@ -70,7 +63,7 @@ export function createEffects() {
         x: x + Math.cos(angle) * radius * 0.8,
         y: y + Math.sin(angle) * radius * 0.8,
         vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed - 40, // a little upward push
+        vy: Math.sin(angle) * speed - 40,
         size: 1.5 + Math.random() * 2,
         color: i % 2 === 0 ? color : COLORS.orange,
         life: MERGE_FX.particleLife,
@@ -106,7 +99,6 @@ export function createEffects() {
     ghosts = ghosts.filter((ghost) => ghost.life > 0);
     rings = rings.filter((ring) => ring.life > 0);
 
-    // Deformed balls go back to round at a fixed pace.
     for (const ball of squashedBalls) {
       ball.squash -= (SQUASH.max / SQUASH.duration) * dt;
       if (ball.squash <= 0) {
@@ -147,7 +139,7 @@ export function createEffects() {
     ctx.strokeStyle = COLORS.ink;
     ctx.fillStyle = COLORS.warmWhite;
     for (const text of texts) {
-      ctx.globalAlpha = Math.min(1, text.life / (TEXT_LIFE / 2)); // solid first, then fades
+      ctx.globalAlpha = Math.min(1, text.life / (TEXT_LIFE / 2));
       ctx.font = `700 ${text.size}px Fredoka, sans-serif`;
       ctx.strokeText(text.text, text.x, text.y);
       ctx.fillText(text.text, text.x, text.y);

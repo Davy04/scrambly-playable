@@ -10,7 +10,6 @@ function canMerge(bodyA, bodyB) {
   return Boolean(bodyA.level) && bodyA.level === bodyB.level && bodyA.level < MAX_LEVEL;
 }
 
-// Left wall, right wall and floor around the play area. The top stays open.
 function createWalls() {
   const { x, y, w, h } = PLAY_AREA;
   const t = PHYSICS.wallThickness;
@@ -19,7 +18,6 @@ function createWalls() {
   const sideCenterY = y + h - sideHeight / 2;
   const options = { isStatic: true };
 
-  // Matter rectangles are positioned by their center.
   return [
     Bodies.rectangle(x - t / 2, sideCenterY, t, sideHeight, options),
     Bodies.rectangle(x + w + t / 2, sideCenterY, t, sideHeight, options),
@@ -37,7 +35,6 @@ export function createWorld() {
   // Same-level pairs that started touching during the current step.
   // They are only collected here: changing the world inside a Matter callback is unsafe.
   const touchingPairs = [];
-  // Hard hits of the current step() call, reported so the renderer can squash the balls.
   let impacts = [];
   Events.on(engine, 'collisionStart', (event) => {
     for (const pair of event.pairs) {
@@ -46,8 +43,6 @@ export function createWorld() {
     }
   });
 
-  // Measures how fast the two bodies were closing in along the line between them.
-  // Slow contacts are ignored, so balls resting in a stack report nothing.
   function recordImpact({ bodyA, bodyB, collision }) {
     const { normal } = collision;
     const closingSpeed = Math.abs(
@@ -67,15 +62,14 @@ export function createWorld() {
       friction: PHYSICS.friction,
     });
     ball.level = level;
-    ball.merged = false; // true once this ball has been used in a merge
-    ball.popLeft = 0; // seconds left of the "pop" animation
-    ball.squash = 0; // how flattened the ball is drawn right now (set by effects.js)
-    ball.squashAngle = 0; // direction of the flattening
+    ball.merged = false;
+    ball.popLeft = 0;
+    ball.squash = 0;
+    ball.squashAngle = 0;
     Composite.add(engine.world, ball);
     return ball;
   }
 
-  // Replaces two touching balls with one ball of the next level at their midpoint.
   function mergePair(ballA, ballB) {
     ballA.merged = true;
     ballB.merged = true;
@@ -96,8 +90,6 @@ export function createWorld() {
     return { x, y, level, ball, sources };
   }
 
-  // Returns what was merged: one { x, y, level, ball, sources } per new ball.
-  // `sources` are the positions of the two balls that were replaced.
   function resolveMerges() {
     const merges = [];
     for (const [ballA, ballB] of touchingPairs) {
@@ -116,8 +108,6 @@ export function createWorld() {
   }
 
   // Advances the simulation in fixed steps. Time that does not fill a whole step is kept for the next frame.
-  // dt is already clamped by the game loop (MAX_DT), so this loop runs a few times at most.
-  // Returns the merges and the hard impacts that happened during this call.
   function step(dt) {
     const merges = [];
     impacts = [];
